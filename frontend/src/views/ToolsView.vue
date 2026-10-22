@@ -399,7 +399,7 @@ onMounted(async () => {
 
     <footer class="footer-note">
       <span>所有工具都在服务端用同一套计价函数计算，结果可复现。</span>
-      <span>xfinance</span>
+      <span>不构成投资建议</span>
     </footer>
   </div>
 </template>

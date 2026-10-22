@@ -65,17 +65,22 @@ class SinaProvider(LiveProvider):
         bars: list[Bar] = []
         for row in payload:
             try:
+                day = date.fromisoformat(row["date"])
                 close = float(row["close"])
+                open_ = float(row.get("open") or close)
+                high = float(row.get("high") or close)
+                low = float(row.get("low") or close)
+                volume = float(row.get("volume") or 0.0)
             except (KeyError, TypeError, ValueError):
                 continue
             bars.append(
                 Bar(
-                    date=date.fromisoformat(row["date"]),
-                    open=float(row.get("open") or close),
-                    high=float(row.get("high") or close),
-                    low=float(row.get("low") or close),
+                    date=day,
+                    open=open_,
+                    high=high,
+                    low=low,
                     close=close,
-                    volume=float(row.get("volume") or 0.0),
+                    volume=volume,
                 )
             )
         if not bars:
@@ -158,17 +163,29 @@ def _parse_fx(symbol: str, value: str | None, invert: bool) -> Snapshot | None:
     previous = _float(parts, 3)
     if last is None or last <= 0:
         return None
+    source_open = _float(parts, 5)
+    source_high = _float(parts, 6)
+    source_low = _float(parts, 7)
     if invert:
         last = 1.0 / last
         previous = 1.0 / previous if previous else last
+        open_ = _inverse(source_open, last)
+        high = _inverse(source_low, last)
+        low = _inverse(source_high, last)
+    else:
+        open_ = source_open or last
+        high = source_high or last
+        low = source_low or last
+    high = max(high, open_, last)
+    low = min(low, open_, last)
     return Snapshot(
         symbol=symbol,
         name=parts[9] if len(parts) > 9 else symbol,
         last=last,
         prev_close=previous or last,
-        open=(1.0 / (_float(parts, 5) or last)) if invert else (_float(parts, 5) or last),
-        high=(1.0 / (_float(parts, 6) or last)) if invert else (_float(parts, 6) or last),
-        low=(1.0 / (_float(parts, 7) or last)) if invert else (_float(parts, 7) or last),
+        open=open_,
+        high=high,
+        low=low,
         volume=0.0,
         amount=0.0,
         ts=_timestamp(parts[10] if len(parts) > 10 else "", parts[0]),
@@ -199,6 +216,12 @@ def _parse_sge(value: str | None) -> Snapshot | None:
         ts=_timestamp(parts[16][:10] if len(parts) > 16 else "", parts[16][11:19] if len(parts) > 16 else ""),
         source="sina",
     )
+
+
+def _inverse(value: float | None, fallback: float) -> float:
+    if value is None or value <= 0:
+        return fallback
+    return 1.0 / value
 
 
 def _float(parts: list[str], index: int) -> float | None:

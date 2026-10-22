@@ -191,7 +191,7 @@ curl 'http://127.0.0.1:8000/api/instruments/SH600519/chart?numeraire=XAU&range=1
 uv run pytest
 ```
 
-74 个用例全部离线运行：计价换算、指标、表达式 DSL、统计与回测、降采样、API 生命周期、自选股、自定义指数、工具接口、时间戳与错误响应。测试固定 `demo_as_of`，不访问通达信、ECB 或新浪。
+79 个用例全部离线运行：计价换算、指标、表达式 DSL、统计与回测、降采样、API 生命周期、自选股、自定义指数、工具接口、时间戳与错误响应、外部数据源解析。测试固定 `demo_as_of`，不访问通达信、ECB 或新浪。
 
 ## 开发工具
 
@@ -211,4 +211,4 @@ uv run pytest
 
 ## 许可
 
-代码以 MIT 许可发布。外部数据源、行情接口与 eltdx 的许可独立于本项目，使用者需自行遵守。
+代码以 MIT 许可发布。第三方组件与数据源许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。界面页脚保留 TradingView Lightweight Charts 的署名链接。

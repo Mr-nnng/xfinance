@@ -166,12 +166,3 @@ class NumeraireState:
             self.error = f"缺少 {self.numeraire.label} 的历史序列"
             return None
         return value * rate / denominator
-
-
-def rebase(values: list[float]) -> list[float]:
-    if not values:
-        return values
-    base = values[0]
-    if base == 0:
-        return values
-    return [value / base for value in values]

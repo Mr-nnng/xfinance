@@ -40,6 +40,7 @@ include = [
     "scripts",
     "tests",
     "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
     "alembic.ini",
     "docs",
     "PLAN.md",

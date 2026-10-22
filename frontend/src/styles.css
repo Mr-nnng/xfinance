@@ -2205,3 +2205,32 @@ textarea.input {
     opacity: 1;
   }
 }
+
+.app-footer {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 28px 30px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: var(--faint);
+  font-size: 10px;
+}
+
+.app-footer a {
+  color: var(--faint);
+  transition: color 0.18s ease;
+}
+
+.app-footer a:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 760px) {
+  .app-footer {
+    padding: 0 14px 22px;
+    flex-direction: column;
+    gap: 5px;
+  }
+}

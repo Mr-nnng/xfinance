@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from datetime import date
-from typing import Literal
 
 from .models import Bar, Timeframe
 
@@ -41,12 +40,3 @@ def _aggregate(bars: list[Bar]) -> Bar:
         volume=sum(bar.volume for bar in bars),
         amount=sum(bar.amount for bar in bars),
     )
-
-
-def infer_error_kind(kind: str) -> Literal["price", "yield"]:
-    return "yield" if kind == "yield" else "price"
-
-
-def tail(bars: Iterable[Bar], count: int | None) -> list[Bar]:
-    values = list(bars)
-    return values[-count:] if count is not None and count > 0 else values

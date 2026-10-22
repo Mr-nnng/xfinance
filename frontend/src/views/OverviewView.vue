@@ -378,7 +378,7 @@ onBeforeUnmount(() => {
 
       <footer class="footer-note">
         <span>每 10 秒自动刷新 · 数据源：{{ sources || '—' }}</span>
-        <span>xfinance · 任意标的 × 任意硬通货</span>
+        <span>演示数据仅用于离线体验</span>
       </footer>
     </template>
 
