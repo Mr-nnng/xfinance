@@ -56,7 +56,9 @@ class SyncService:
                     return cached, self.s.sync_state.note(key) or "cache"
                 raise DataUnavailable(str(error)) from error
 
-    def ensure_series(self, symbol: str, *, timeframe: Timeframe = "1d") -> tuple[list[Bar], str]:
+    def ensure_series(
+        self, symbol: str, *, timeframe: Timeframe = "1d"
+    ) -> tuple[list[Bar], str]:
         meta = series_meta(symbol)
         if meta is None:
             raise DataUnavailable(f"{symbol} 不是可用的行情序列")
@@ -86,7 +88,7 @@ class SyncService:
             except Exception as error:
                 if cached:
                     logger.warning("using cached series for {}: {}", symbol, error)
-                    return cached, self.s.sync_state.note(key) or "cache"
+                    return cached, self.s.sync_state.note(group_key) or "cache"
                 raise DataUnavailable(str(error)) from error
 
     def _series_plan(self, symbol: str):
@@ -112,7 +114,9 @@ class SyncService:
                 rows = self.s.sources.securities()
                 if rows:
                     count = self.s.securities.replace_all(rows)
-                    self.s.sync_state.touch(key, "tdx")
+                    self.s.sync_state.touch(
+                        key, "demo" if self.s.settings.data_mode == "demo" else "tdx"
+                    )
                 return count
             except Exception as error:
                 logger.warning("security table unavailable: {}", error)

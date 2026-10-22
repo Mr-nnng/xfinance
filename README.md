@@ -166,8 +166,11 @@ uv run python -m app --host 0.0.0.0 --port 9000 \
 | GET | `/api/instruments/{symbol}` | 标的元信息 |
 | GET | `/api/instruments/{symbol}/snapshot` | 快照与五档 |
 | GET | `/api/instruments/{symbol}/chart` | K 线、指标、计价、归一化 |
-| GET/POST/DELETE | `/api/watchlist` | 自选股 |
-| GET/POST/DELETE | `/api/custom-indices` | 自定义指数 |
+| GET | `/api/watchlist` | 自选股列表 |
+| POST/DELETE | `/api/watchlist/{symbol}` | 加入 / 移出自选 |
+| GET | `/api/custom-indices` | 自定义指数列表 |
+| POST | `/api/custom-indices` | 新建自定义指数 |
+| DELETE | `/api/custom-indices/{id}` | 删除自定义指数 |
 | POST | `/api/custom-indices/validate` | 表达式校验 |
 | GET | `/api/custom-indices/{id}/chart` | 表达式图表与分位 |
 | GET | `/api/tools/dca` | 定投回测 |
@@ -188,7 +191,7 @@ curl 'http://127.0.0.1:8000/api/instruments/SH600519/chart?numeraire=XAU&range=1
 uv run pytest
 ```
 
-72 个用例全部离线运行：计价换算、指标、表达式 DSL、统计与回测、降采样、API 生命周期、自选股、自定义指数、工具接口、时间戳与错误响应。测试固定 `demo_as_of`，不访问通达信、ECB 或新浪。
+74 个用例全部离线运行：计价换算、指标、表达式 DSL、统计与回测、降采样、API 生命周期、自选股、自定义指数、工具接口、时间戳与错误响应。测试固定 `demo_as_of`，不访问通达信、ECB 或新浪。
 
 ## 开发工具
 

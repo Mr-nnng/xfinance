@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { get, del } from '../api'
-import { fmtCompact, fmtPct, fmtPrice, fmtTime, tone } from '../utils'
+import { fmtPct, fmtPrice, fmtTime, tone } from '../utils'
 import { useToast } from '../composables/useToast'
 import Sparkline from '../components/Sparkline.vue'
 import CustomIndexDialog from '../components/CustomIndexDialog.vue'
