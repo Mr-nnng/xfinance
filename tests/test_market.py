@@ -3,18 +3,50 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from app.services.market import _next_open
+from app.domain.models import SeriesMeta
+from app.services.market import MarketService
 
 SHANGHAI = ZoneInfo("Asia/Shanghai")
 
 
-def test_next_open_handles_preopen_lunch_and_weekend() -> None:
-    assert _next_open(datetime(2026, 10, 23, 8, 0, tzinfo=SHANGHAI)) == datetime(
-        2026, 10, 23, 9, 30, tzinfo=SHANGHAI
+def _meta(market: str, kind: str = "stock") -> SeriesMeta:
+    return SeriesMeta(
+        symbol="SH600519",
+        name="测试",
+        kind=kind,  # type: ignore[arg-type]
+        market=market,
+        currency="CNY",
+        unit="股",
     )
-    assert _next_open(datetime(2026, 10, 23, 10, 0, tzinfo=SHANGHAI)) == datetime(
-        2026, 10, 23, 13, 0, tzinfo=SHANGHAI
+
+
+def test_market_open_is_per_instrument() -> None:
+    stock = _meta("SH")
+    fx = _meta("FX", "fx")
+    global_market = _meta("GLOBAL", "commodity")
+    yield_meta = _meta("UST", "yield")
+
+    assert MarketService.is_market_open(
+        stock, datetime(2026, 10, 23, 10, 0, tzinfo=SHANGHAI)
     )
-    assert _next_open(datetime(2026, 10, 23, 16, 0, tzinfo=SHANGHAI)) == datetime(
-        2026, 10, 26, 9, 30, tzinfo=SHANGHAI
+    assert not MarketService.is_market_open(
+        stock, datetime(2026, 10, 23, 12, 0, tzinfo=SHANGHAI)
+    )
+    assert not MarketService.is_market_open(
+        stock, datetime(2026, 10, 23, 15, 1, tzinfo=SHANGHAI)
+    )
+    assert not MarketService.is_market_open(
+        stock, datetime(2026, 10, 24, 10, 0, tzinfo=SHANGHAI)
+    )
+    assert MarketService.is_market_open(
+        fx, datetime(2026, 10, 23, 23, 0, tzinfo=SHANGHAI)
+    )
+    assert not MarketService.is_market_open(
+        fx, datetime(2026, 10, 24, 23, 0, tzinfo=SHANGHAI)
+    )
+    assert MarketService.is_market_open(
+        global_market, datetime(2026, 10, 23, 23, 0, tzinfo=SHANGHAI)
+    )
+    assert not MarketService.is_market_open(
+        yield_meta, datetime(2026, 10, 23, 10, 0, tzinfo=SHANGHAI)
     )

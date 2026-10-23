@@ -38,11 +38,7 @@ class OverviewService:
             self.s.market.meta(symbol) for symbol in OVERVIEW_COMMODITIES
         ]
         yield_metas = [self.s.market.meta(symbol) for symbol in OVERVIEW_YIELDS]
-        equity_symbols = [meta.symbol for meta in index_metas + watch_metas]
-        series_symbols = [
-            meta.symbol for meta in fx_metas + commodity_metas + yield_metas
-        ]
-        self._presync(equity_symbols, series_symbols)
+        self._presync(index_metas + watch_metas, fx_metas + commodity_metas + yield_metas)
 
         all_metas = index_metas + watch_metas + fx_metas + commodity_metas
         try:
@@ -164,16 +160,30 @@ class OverviewService:
 
     # -- sync ----------------------------------------------------------
 
-    def _presync(self, equity_symbols: list[str], series_symbols: list[str]) -> None:
+    def _presync(
+        self, equity_metas: list[SeriesMeta], series_metas: list[SeriesMeta]
+    ) -> None:
         jobs: list[tuple[str, str]] = []
-        for symbol in equity_symbols:
+        for meta in equity_metas:
+            symbol = meta.symbol
             try:
+                if not self.s.market.is_market_open(meta) and self.s.bars.last_date(
+                    symbol, "1d", "none"
+                ):
+                    continue
                 if not self.s.sync.is_fresh_equity(symbol):
                     jobs.append(("equity", symbol))
             except Exception:
                 jobs.append(("equity", symbol))
-        for symbol in series_symbols:
+        for meta in series_metas:
+            symbol = meta.symbol
             try:
+                if (
+                    meta.kind != "yield"
+                    and not self.s.market.is_market_open(meta)
+                    and self.s.bars.last_date(symbol, "1d", "none")
+                ):
+                    continue
                 if not self.s.sync.is_fresh_series(symbol):
                     jobs.append(("series", symbol))
             except Exception:

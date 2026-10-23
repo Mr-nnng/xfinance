@@ -73,22 +73,12 @@ async function load() {
   }
 }
 
-function nextDelay() {
-  if (data.value?.market?.is_open) return 10000
-  const next = data.value?.market?.next_open
-  const target = next ? new Date(next).getTime() : Number.NaN
-  if (!Number.isFinite(target)) return 24 * 60 * 60 * 1000
-  return Math.max(5000, target - Date.now() + 2000)
-}
-
 function schedule() {
   window.clearTimeout(timer)
-  if (!data.value) return
   timer = window.setTimeout(async () => {
-    if (document.hidden) return
-    await load()
+    if (!document.hidden) await load()
     schedule()
-  }, nextDelay())
+  }, 10000)
 }
 
 async function refreshNow() {

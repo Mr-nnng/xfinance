@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
 from uuid import uuid4
 
 import pytest
@@ -32,7 +31,6 @@ def test_overview_shape(client: TestClient) -> None:
     assert len(data["yields"]) == 4
     assert len(data["watchlist"]) >= 3
     assert data["market"]["timezone"] == "Asia/Shanghai"
-    assert datetime.fromisoformat(data["market"]["next_open"]).tzinfo is not None
     assert "demo" in data["sources"]
     assert set(data["indices"][0]["meta"]) == {"symbol", "name", "unit"}
     assert set(data["indices"][0]["snapshot"]) == {"last", "change", "change_pct"}

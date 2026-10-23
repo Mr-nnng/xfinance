@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, time, timedelta
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from loguru import logger
@@ -139,6 +139,8 @@ class MarketService:
             else:
                 cached[symbol] = value
         sources: set[str] = {snapshot.source for snapshot in cached.values()}
+        if self.s.settings.data_mode != "demo":
+            missing = [meta for meta in missing if self.is_market_open(meta)]
         if missing:
             equity = [meta for meta in missing if meta.kind in _PRICE_KINDS]
             series = [meta for meta in missing if meta.kind not in _PRICE_KINDS]
@@ -173,16 +175,18 @@ class MarketService:
             if fallback is not None:
                 cached[meta.symbol] = fallback
                 sources.add("cache")
-        return cached, "+".join(sorted(sources)) if sources else "unknown"
+        return cached, "+".join(sorted(sources)) if sources else "cache"
 
     def _snapshot_from_bars(self, meta: SeriesMeta) -> Snapshot | None:
-        try:
-            if meta.kind in _PRICE_KINDS:
-                bars, _source = self.s.sync.ensure_equity(meta.symbol, "1d", "none")
-            else:
-                bars, _source = self.s.sync.ensure_series(meta.symbol)
-        except Exception:
-            return None
+        bars = self.s.bars.tail(meta.symbol, "1d", "none", 2)
+        if not bars:
+            try:
+                if meta.kind in _PRICE_KINDS:
+                    bars, _source = self.s.sync.ensure_equity(meta.symbol, "1d", "none")
+                else:
+                    bars, _source = self.s.sync.ensure_series(meta.symbol)
+            except Exception:
+                return None
         if not bars:
             return None
         last = bars[-1]
@@ -202,6 +206,20 @@ class MarketService:
         )
 
     @staticmethod
+    def is_market_open(meta: SeriesMeta, now: datetime | None = None) -> bool:
+        current = now or datetime.now(ZoneInfo("Asia/Shanghai"))
+        if current.weekday() >= 5:
+            return False
+        if meta.market in {"SH", "SZ", "BJ"}:
+            minutes = current.hour * 60 + current.minute
+            return (9 * 60 + 30 <= minutes <= 11 * 60 + 30) or (
+                13 * 60 <= minutes <= 15 * 60
+            )
+        if meta.market in {"FX", "GLOBAL"}:
+            return True
+        return False
+
+    @staticmethod
     def status() -> dict[str, object]:
         now = datetime.now(ZoneInfo("Asia/Shanghai"))
         weekday = now.weekday() < 5
@@ -212,34 +230,19 @@ class MarketService:
         )
         midday = weekday and (11 * 60 + 30 < minutes < 13 * 60)
         if is_open:
-            label = "交易中"
+            label = "A 股交易中"
         elif midday:
-            label = "午间休市"
+            label = "A 股午休"
         elif not weekday:
             label = "周末休市"
         else:
-            label = "已收盘"
+            label = "A 股已收盘"
         return {
             "is_open": is_open,
             "label": label,
             "as_of": now.replace(tzinfo=None).isoformat(timespec="seconds"),
             "timezone": "Asia/Shanghai",
-            "next_open": _next_open(now).isoformat(),
         }
-
-
-def _next_open(now: datetime) -> datetime:
-    """Next weekday session open in Asia/Shanghai. Holidays are not modeled."""
-    tz = ZoneInfo("Asia/Shanghai")
-    for offset in range(0, 8):
-        day = (now + timedelta(days=offset)).date()
-        if day.weekday() >= 5:
-            continue
-        for hour, minute in ((9, 30), (13, 0)):
-            candidate = datetime.combine(day, time(hour, minute), tzinfo=tz)
-            if candidate > now:
-                return candidate
-    return now + timedelta(days=1)
 
 
 def _rank(meta: SeriesMeta, query: str) -> tuple[int, int, int]:

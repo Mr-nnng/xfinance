@@ -191,4 +191,5 @@ SQLite WAL + busy_timeout。迁移由 Alembic 管理，启动时 upgrade head。
 - 卡片 sparkline 改用 `ORDER BY date DESC LIMIT 45` 的 `tail` 查询；同步前先检查 `sync_state` 和 `last_date`，fresh 时不再加载全量 bars。
 - 自定义指数卡片缓存与轮询对齐为 10 秒；演示快照不再复制整段历史。
 - 同一请求的 CPU 从约 1.2 秒降到约 17 毫秒（demo）和约 44 毫秒（live）；live 剩余时间主要是 TDX/新浪网络等待。
-- 收盘后前端停止 10 秒轮询，改为按 `next_open` 定时，下一交易时段自动恢复。主页响应只保留卡片使用的字段，payload 从约 14.9KB 降到约 10.5KB。
+- 总览仍每 10 秒轮询，但按标的判断开市状态。A 股收盘后跳过快照请求与同步，仍在交易的 FX、商品继续刷新。主页响应只保留卡片使用的字段，payload 从约 14.9KB 降到约 10.5KB。
+- 收盘后 live 单次总览 CPU 约 27 毫秒，开市约 44 毫秒，demo 约 17 毫秒。
