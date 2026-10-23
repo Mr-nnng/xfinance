@@ -18,7 +18,7 @@ def test_numeraires_cover_hard_assets(client: TestClient) -> None:
     response = client.get("/api/meta/numeraires")
     assert response.status_code == 200
     ids = {item["id"] for item in response.json()["data"]}
-    assert {"CNY", "USD", "JPY", "EUR", "GBP", "XAU", "XAU_CNY_G", "WTI", "BRENT", "XAG"} <= ids
+    assert {"CNY", "USD", "JPY", "EUR", "GBP", "HKD", "XAU", "XAU_CNY_G", "WTI", "BRENT", "XAG"} <= ids
 
 
 def test_overview_shape(client: TestClient) -> None:
@@ -350,3 +350,32 @@ def test_overview_sparklines_use_bounded_tail(client: TestClient) -> None:
     for section in ("indices", "watchlist", "fx", "commodities", "yields"):
         for card in payload[section]:
             assert 0 <= len(card["spark"]) <= 45
+
+
+def test_default_watchlist_and_new_markets(client: TestClient) -> None:
+    overview = client.get("/api/overview").json()["data"]
+    assert len(overview["watchlist"]) == 22
+    expected = {
+        "SPX": ("标普500", "index", "US", "USD"),
+        "IXIC": ("纳斯达克", "index", "US", "USD"),
+        "DXY": ("美元指数", "index", "GLOBAL", "USD"),
+        "USDCNH": ("美元兑离岸人民币", "fx", "FX", "CNY"),
+        "HK00883": ("中国海洋石油", "stock", "HK", "HKD"),
+        "SZ160723": ("嘉实原油LOF", "lof", "SZ", "CNY"),
+        "SH600900": ("长江电力", "stock", "SH", "CNY"),
+        "SH600938": ("中国海油", "stock", "SH", "CNY"),
+    }
+    for symbol, (name, kind, market, currency) in expected.items():
+        meta = client.get(f"/api/instruments/{symbol}").json()["data"]
+        assert (meta["name"], meta["kind"], meta["market"], meta["currency"]) == (
+            name,
+            kind,
+            market,
+            currency,
+        )
+        chart = client.get(f"/api/instruments/{symbol}/chart?range=1y")
+        assert chart.status_code == 200
+        assert chart.json()["data"]["bars"]
+
+    search = client.get("/api/search", params={"q": "嘉实原油"}).json()["data"]
+    assert any(item["symbol"] == "SZ160723" for item in search)

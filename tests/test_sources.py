@@ -8,6 +8,7 @@ from typing import Any
 
 import pytest
 
+from app.infrastructure.external.cnbc import CnbcProvider
 from app.infrastructure.external.frankfurter import FrankfurterProvider
 from app.infrastructure.external.sge import SgeProvider
 from app.infrastructure.external.sina import SinaProvider
@@ -46,8 +47,8 @@ class FakeClient:
 def test_frankfurter_builds_usd_cross_bars() -> None:
     payload = {
         "rates": {
-            "2024-01-02": {"CNY": 7.1, "JPY": 140.0, "EUR": 0.91, "GBP": 0.79},
-            "2024-01-03": {"CNY": 7.2, "JPY": 141.0, "EUR": 0.92, "GBP": 0.80},
+            "2024-01-02": {"CNY": 7.1, "JPY": 140.0, "EUR": 0.91, "GBP": 0.79, "HKD": 7.80},
+            "2024-01-03": {"CNY": 7.2, "JPY": 141.0, "EUR": 0.92, "GBP": 0.80, "HKD": 7.81},
         }
     }
     provider = FrankfurterProvider()
@@ -55,7 +56,7 @@ def test_frankfurter_builds_usd_cross_bars() -> None:
 
     series = provider.daily(end=date(2024, 1, 3), years=1)
 
-    assert set(series) == {"USDCNY", "USDJPY", "USDEUR", "USDGBP"}
+    assert set(series) == {"USDCNY", "USDJPY", "USDEUR", "USDGBP", "USDHKD"}
     cny = series["USDCNY"]
     assert [bar.date for bar in cny] == [date(2024, 1, 2), date(2024, 1, 3)]
     assert [bar.close for bar in cny] == pytest.approx([7.1, 7.2])
@@ -202,6 +203,77 @@ def test_sina_snapshots_maps_commodity_sge_and_fx_layouts() -> None:
     assert eur.high == pytest.approx(1.0 / 1.17)
     assert eur.low == pytest.approx(1.0 / 1.26)
     assert eur.low <= eur.last <= eur.high
+
+
+def test_cnbc_parses_global_daily_bars() -> None:
+    payload = {
+        "barData": {
+            "priceBars": [
+                {
+                    "tradeTime": "20261022000000",
+                    "open": "7600.0",
+                    "high": "7700.0",
+                    "low": "7550.0",
+                    "close": "7650.0",
+                    "volume": "100",
+                },
+                {
+                    "tradeTime": "20261023000000",
+                    "open": "7650.0",
+                    "high": "7680.0",
+                    "low": "7600.0",
+                    "close": "7660.0",
+                    "volume": "200",
+                },
+            ]
+        }
+    }
+    provider = CnbcProvider()
+    provider.client = FakeClient(FakeResponse(payload=payload))
+
+    bars = provider.daily("SPX")
+
+    assert [bar.date for bar in bars] == [date(2026, 10, 22), date(2026, 10, 23)]
+    assert [bar.close for bar in bars] == pytest.approx([7650.0, 7660.0])
+
+
+def test_sina_new_global_hk_and_cnh_snapshots() -> None:
+    spx = [
+        "标普500指数", "7653.9", "-0.12", "2026-10-24 00:08:37", "-9.49",
+        "7637.1", "7660.1", "7612.0", "0", "0", "100", "200", "0", "0",
+    ]
+    dxy = [
+        "00:09:03", "101.77", "101.77", "101.62", "3674", "101.62",
+        "101.85", "101.48", "101.77", "美元指数", "2026-10-24",
+    ]
+    hk = [
+        "CNOOC", "中国海洋石油", "23.500", "23.360", "23.520", "23.060",
+        "23.120", "-0.240", "-1.027", "23.120", "23.140", "2158946936",
+        "93120199", "0.000", "0.000", "29.210", "18.612", "2026/10/23", "16:08",
+    ]
+    cnh = [
+        "00:08:56", "6.6699", "6.6700", "6.6726", "59", "6.6716", "6.6737",
+        "6.6678", "6.6699", "离岸人民币（香港）", "2026-10-24",
+    ]
+    text = "\n".join(
+        [
+            f'var hq_str_gb_$inx="{",".join(spx)}";',
+            f'var hq_str_DINIW="{",".join(dxy)}";',
+            f'var hq_str_hk00883="{",".join(hk)}";',
+            f'var hq_str_fx_susdcnh="{",".join(cnh)}";',
+        ]
+    )
+    provider = SinaProvider()
+    provider.client = FakeClient(FakeResponse(content=text.encode("gb18030")))
+
+    snapshots = provider.snapshots(["SPX", "DXY", "HK00883", "USDCNH"])
+
+    assert set(snapshots) == {"SPX", "DXY", "HK00883", "USDCNH"}
+    assert snapshots["SPX"].last == pytest.approx(7653.9)
+    assert snapshots["SPX"].prev_close == pytest.approx(7663.39)
+    assert snapshots["DXY"].prev_close == pytest.approx(101.62)
+    assert snapshots["HK00883"].last == pytest.approx(23.12)
+    assert snapshots["USDCNH"].last == pytest.approx(6.6699)
 
 
 def test_sge_au9999_daily_normalizes_high_and_low() -> None:

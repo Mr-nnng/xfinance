@@ -5,6 +5,7 @@ from __future__ import annotations
 from loguru import logger
 
 from ..domain.catalog import (
+    CNBC_SERIES,
     COMMODITY_SERIES,
     DEFAULT_WATCHLIST,
     FX_SERIES,
@@ -105,6 +106,11 @@ class SyncService:
                 raise DataUnavailable(str(error)) from error
 
     def _series_plan(self, symbol: str):
+        if symbol in CNBC_SERIES:
+            return (
+                f"series:cnbc:{symbol}",
+                lambda: _single(self.s.sources.global_daily(symbol), symbol),
+            )
         if symbol in FX_SERIES:
             return "series:fx", lambda: self.s.sources.fx_daily()
         if any(code == symbol for _column, code, _name in YIELD_TENORS):
@@ -117,7 +123,7 @@ class SyncService:
         raise DataUnavailable(f"没有 {symbol} 的历史序列")
 
     def ensure_securities(self) -> int:
-        key = "securities"
+        key = "securities:v2"
         lock = self.s.app.lock_for(key)
         with lock:
             count = self.s.securities.count()
@@ -145,12 +151,11 @@ class SyncService:
         )
 
     def seed_watchlist(self) -> None:
-        key = "watchlist:seeded"
+        key = "watchlist:seeded:v2"
         if self.s.sync_state.fetched_at(key) is not None:
             return
-        if not self.s.watchlist.symbols():
-            for symbol in DEFAULT_WATCHLIST:
-                self.s.watchlist.add(symbol)
+        for symbol in DEFAULT_WATCHLIST:
+            self.s.watchlist.add(symbol)
         self.s.sync_state.touch(key, "defaults")
 
 

@@ -64,6 +64,15 @@ _BASE: dict[str, float] = {
     "SH588000": 1.02,
     "SZ159915": 2.59,
     "SH501050": 1.0,
+    "SH600900": 30.2,
+    "SH600938": 33.7,
+    "SZ160723": 2.574,
+    "HK00883": 23.12,
+    "SPX": 7653.94,
+    "IXIC": 26078.07,
+    "DXY": 101.77,
+    "USDCNH": 6.6699,
+    "USDHKD": 7.80,
 }
 
 _FACTOR_CACHE: dict[tuple[date, date], tuple[list[float], list[float]]] = {}

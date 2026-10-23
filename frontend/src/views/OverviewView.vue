@@ -25,6 +25,7 @@ const sourceLabel = {
   sina: '新浪财经',
   frankfurter: 'ECB 汇率',
   treasury: '美国财政部',
+  cnbc: 'CNBC',
   sge: '上金所',
   cache: '本地缓存',
   expression: '表达式',
@@ -217,7 +218,13 @@ onBeforeUnmount(() => {
               </svg>
               自选股
             </h2>
-            <button class="linkish" @click="focusSearch">搜索添加 +</button>
+            <div class="watch-head-actions">
+              <span class="panel-sub">
+                {{ data.watchlist.length }} 项
+                <template v-if="data.watchlist.length > 5"> · 滚动查看</template>
+              </span>
+              <button class="linkish" @click="focusSearch">搜索添加 +</button>
+            </div>
           </div>
 
           <div v-if="!data.watchlist.length" class="empty-state">

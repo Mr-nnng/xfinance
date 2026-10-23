@@ -25,6 +25,7 @@ def test_market_open_is_per_instrument() -> None:
     fx = _meta("FX", "fx")
     global_market = _meta("GLOBAL", "commodity")
     yield_meta = _meta("UST", "yield")
+    us_index = _meta("US", "index")
 
     assert MarketService.is_market_open(
         stock, datetime(2026, 10, 23, 10, 0, tzinfo=SHANGHAI)
@@ -46,6 +47,9 @@ def test_market_open_is_per_instrument() -> None:
     )
     assert MarketService.is_market_open(
         global_market, datetime(2026, 10, 23, 23, 0, tzinfo=SHANGHAI)
+    )
+    assert MarketService.is_market_open(
+        us_index, datetime(2026, 10, 24, 0, 0, tzinfo=SHANGHAI)
     )
     assert not MarketService.is_market_open(
         yield_meta, datetime(2026, 10, 23, 10, 0, tzinfo=SHANGHAI)

@@ -39,8 +39,15 @@ _FX_CODES = {
     "USDJPY": ("USDJPY", False),
     "USDEUR": ("EURUSD", True),
     "USDGBP": ("GBPUSD", True),
+    "USDCNH": ("fx_susdcnh", False),
 }
-_LINE_RE = re.compile(r'var hq_str_([A-Za-z0-9_]+)="([^"]*)";')
+_GLOBAL_CODES = {
+    "SPX": "gb_$inx",
+    "IXIC": "gb_$ixic",
+    "DXY": "DINIW",
+}
+_HK_CODES = {"HK00883": "hk00883"}
+_LINE_RE = re.compile(r'var hq_str_([A-Za-z0-9_$]+)="([^"]*)";')
 _JSONP_RE = re.compile(r"^[^(]*\((.*)\)\s*;?\s*$", re.DOTALL)
 
 
@@ -96,6 +103,10 @@ class SinaProvider(LiveProvider):
                 codes.append(_FX_CODES[symbol][0])
             elif symbol == "AU9999":
                 codes.append("SGE_AU9999")
+            elif symbol in _GLOBAL_CODES:
+                codes.append(_GLOBAL_CODES[symbol])
+            elif symbol in _HK_CODES:
+                codes.append(_HK_CODES[symbol])
         if not codes:
             return {}
         try:
@@ -115,6 +126,14 @@ class SinaProvider(LiveProvider):
                 snapshot = _parse_fx(symbol, raw.get(code), invert)
             elif symbol == "AU9999":
                 snapshot = _parse_sge(raw.get("SGE_AU9999"))
+            elif symbol in _GLOBAL_CODES:
+                code = _GLOBAL_CODES[symbol]
+                if symbol == "DXY":
+                    snapshot = _parse_dxy(raw.get(code))
+                else:
+                    snapshot = _parse_global_index(symbol, raw.get(code))
+            elif symbol in _HK_CODES:
+                snapshot = _parse_hk(symbol, raw.get(_HK_CODES[symbol]))
             else:
                 snapshot = None
             if snapshot is not None:
@@ -189,6 +208,81 @@ def _parse_fx(symbol: str, value: str | None, invert: bool) -> Snapshot | None:
         volume=0.0,
         amount=0.0,
         ts=_timestamp(parts[10] if len(parts) > 10 else "", parts[0]),
+        source="sina",
+    )
+
+
+def _parse_global_index(symbol: str, value: str | None) -> Snapshot | None:
+    if not value:
+        return None
+    parts = value.split(",")
+    if len(parts) < 12:
+        return None
+    last = _float(parts, 1)
+    change = _float(parts, 4)
+    if last is None or last <= 0:
+        return None
+    previous = last - change if change is not None else last
+    return Snapshot(
+        symbol=symbol,
+        name=parts[0] or symbol,
+        last=last,
+        prev_close=previous,
+        open=_float(parts, 5) or last,
+        high=_float(parts, 6) or last,
+        low=_float(parts, 7) or last,
+        volume=_float(parts, 10) or 0.0,
+        amount=_float(parts, 11) or 0.0,
+        ts=_timestamp(parts[3][:10], parts[3][11:19] if len(parts[3]) > 10 else ""),
+        source="sina",
+    )
+
+
+def _parse_dxy(value: str | None) -> Snapshot | None:
+    if not value:
+        return None
+    parts = value.split(",")
+    if len(parts) < 11:
+        return None
+    last = _float(parts, 1)
+    if last is None or last <= 0:
+        return None
+    return Snapshot(
+        symbol="DXY",
+        name=parts[9] or "美元指数",
+        last=last,
+        prev_close=_float(parts, 3) or last,
+        open=_float(parts, 5) or last,
+        high=_float(parts, 6) or last,
+        low=_float(parts, 7) or last,
+        volume=0.0,
+        amount=0.0,
+        ts=_timestamp(parts[10], parts[0]),
+        source="sina",
+    )
+
+
+def _parse_hk(symbol: str, value: str | None) -> Snapshot | None:
+    if not value:
+        return None
+    parts = value.split(",")
+    if len(parts) < 19:
+        return None
+    last = _float(parts, 6)
+    if last is None or last <= 0:
+        return None
+    day = parts[17].replace("/", "-")
+    return Snapshot(
+        symbol=symbol,
+        name=parts[1] or symbol,
+        last=last,
+        prev_close=_float(parts, 3) or last,
+        open=_float(parts, 2) or last,
+        high=_float(parts, 4) or last,
+        low=_float(parts, 5) or last,
+        volume=_float(parts, 11) or 0.0,
+        amount=_float(parts, 12) or 0.0,
+        ts=_timestamp(day, parts[18]),
         source="sina",
     )
 

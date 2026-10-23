@@ -30,7 +30,7 @@ class OverviewService:
         if cached is not None:
             return cached
         self.s.sync.seed_watchlist()
-        watchlist = self.s.watchlist.symbols()[:12]
+        watchlist = self.s.watchlist.symbols()
         index_metas = [self.s.market.meta(symbol) for symbol in OVERVIEW_INDICES]
         watch_metas = [self.s.market.meta(symbol) for symbol in watchlist]
         fx_metas = [self.s.market.meta(symbol) for symbol in OVERVIEW_FX]
@@ -164,19 +164,14 @@ class OverviewService:
         self, equity_metas: list[SeriesMeta], series_metas: list[SeriesMeta]
     ) -> None:
         jobs: list[tuple[str, str]] = []
-        for meta in equity_metas:
+        seen: set[str] = set()
+        for meta in equity_metas + series_metas:
             symbol = meta.symbol
-            try:
-                if not self.s.market.is_market_open(meta) and self.s.bars.last_date(
-                    symbol, "1d", "none"
-                ):
-                    continue
-                if not self.s.sync.is_fresh_equity(symbol):
-                    jobs.append(("equity", symbol))
-            except Exception:
-                jobs.append(("equity", symbol))
-        for meta in series_metas:
-            symbol = meta.symbol
+            if symbol in seen:
+                continue
+            seen.add(symbol)
+            a_share = meta.market in {"SH", "SZ", "BJ"}
+            kind = "equity" if a_share and meta.kind != "yield" else "series"
             try:
                 if (
                     meta.kind != "yield"
@@ -184,10 +179,15 @@ class OverviewService:
                     and self.s.bars.last_date(symbol, "1d", "none")
                 ):
                     continue
-                if not self.s.sync.is_fresh_series(symbol):
-                    jobs.append(("series", symbol))
+                fresh = (
+                    self.s.sync.is_fresh_equity(symbol)
+                    if kind == "equity"
+                    else self.s.sync.is_fresh_series(symbol)
+                )
+                if not fresh:
+                    jobs.append((kind, symbol))
             except Exception:
-                jobs.append(("series", symbol))
+                jobs.append((kind, symbol))
         if not jobs:
             return
 

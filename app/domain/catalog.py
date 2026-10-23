@@ -31,6 +31,7 @@ NUMERAIRES: tuple[Numeraire, ...] = (
     Numeraire("JPY", "日元", "法币", "日元", "fiat", series="USDJPY", currency="JPY"),
     Numeraire("EUR", "欧元", "法币", "欧元", "fiat", series="USDEUR", currency="EUR"),
     Numeraire("GBP", "英镑", "法币", "英镑", "fiat", series="USDGBP", currency="GBP"),
+    Numeraire("HKD", "港币", "法币", "港币", "fiat", series="USDHKD", currency="HKD"),
     Numeraire("XAU", "黄金", "贵金属", "盎司", "asset", series="XAUUSD", currency="USD"),
     Numeraire(
         "XAU_CNY_G",
@@ -55,15 +56,38 @@ FX_SERIES: dict[str, tuple[str, str]] = {
     "USDJPY": ("美元/日元", "JPY"),
     "USDEUR": ("美元/欧元", "EUR"),
     "USDGBP": ("美元/英镑", "GBP"),
+    "USDHKD": ("美元/港币", "HKD"),
 }
 
 COMMODITY_SERIES: dict[str, tuple[str, str, str]] = {
-    "XAUUSD": ("黄金", "美元/盎司", "USD"),
-    "XAGUSD": ("白银", "美元/盎司", "USD"),
+    "XAUUSD": ("COMEX 黄金", "美元/盎司", "USD"),
+    "XAGUSD": ("COMEX 白银", "美元/盎司", "USD"),
     "WTIUSD": ("WTI 原油", "美元/桶", "USD"),
-    "BRENTUSD": ("布伦特原油", "美元/桶", "USD"),
-    "AU9999": ("上金所 Au99.99", "元/克", "CNY"),
+    "BRENTUSD": ("布伦特原油当月连续", "美元/桶", "USD"),
+    "AU9999": ("黄金9999", "元/克", "CNY"),
 }
+
+# Offshore CNY has no ECB/Frankfurter series; it comes from a separate provider.
+CNH_SERIES: dict[str, tuple[str, str]] = {
+    "USDCNH": ("美元兑离岸人民币", "CNY"),
+}
+
+US_INDEX_SERIES: dict[str, str] = {
+    "SPX": "标普500",
+    "IXIC": "纳斯达克",
+}
+
+GLOBAL_INDEX_SERIES: dict[str, str] = {
+    "DXY": "美元指数",
+}
+
+HK_SERIES: dict[str, tuple[str, str]] = {
+    "HK00883": ("中国海洋石油", "stock"),
+}
+
+CNBC_SERIES: frozenset[str] = frozenset(
+    {"SPX", "IXIC", "DXY", "HK00883", "USDCNH"}
+)
 
 # Treasury CSV column -> (display name, symbol)
 YIELD_TENORS: tuple[tuple[str, str, str], ...] = (
@@ -99,9 +123,35 @@ FEATURED: dict[str, tuple[str, str]] = {
     "SH588000": ("科创50ETF", "etf"),
     "SZ159915": ("创业板ETF", "etf"),
     "SH501050": ("华夏上证50LOF", "lof"),
+    "SH600900": ("长江电力", "stock"),
+    "SH600938": ("中国海油", "stock"),
+    "SZ160723": ("嘉实原油LOF", "lof"),
 }
 
-DEFAULT_WATCHLIST: tuple[str, ...] = ("SH600519", "SZ300750", "SH510300")
+DEFAULT_WATCHLIST: tuple[str, ...] = (
+    "SH000001",
+    "SZ399001",
+    "SZ399006",
+    "SPX",
+    "IXIC",
+    "SH600036",
+    "SH600900",
+    "SZ160723",
+    "HK00883",
+    "SH600938",
+    "UST3Y",
+    "UST5Y",
+    "UST30Y",
+    "UST20Y",
+    "UST10Y",
+    "AU9999",
+    "WTIUSD",
+    "BRENTUSD",
+    "XAUUSD",
+    "USDCNH",
+    "USDJPY",
+    "DXY",
+)
 
 OVERVIEW_INDICES: tuple[str, ...] = ("SH000001", "SZ399001", "SZ399006", "SH000300")
 OVERVIEW_FX: tuple[str, ...] = ("USDCNY", "USDJPY", "USDEUR", "USDGBP")
@@ -117,6 +167,47 @@ OVERVIEW_YIELDS: tuple[str, ...] = ("UST1Y", "UST5Y", "UST10Y", "UST30Y")
 
 def series_meta(symbol: str) -> SeriesMeta | None:
     """Static metadata for non-equity series and known indices."""
+    if symbol in CNH_SERIES:
+        name, quote_currency = CNH_SERIES[symbol]
+        return SeriesMeta(
+            symbol=symbol,
+            name=name,
+            kind="fx",
+            market="FX",
+            currency=quote_currency,
+            unit=quote_currency,
+            chart="line",
+        )
+    if symbol in US_INDEX_SERIES:
+        return SeriesMeta(
+            symbol=symbol,
+            name=US_INDEX_SERIES[symbol],
+            kind="index",
+            market="US",
+            currency="USD",
+            unit="点",
+            chart="line",
+        )
+    if symbol in GLOBAL_INDEX_SERIES:
+        return SeriesMeta(
+            symbol=symbol,
+            name=GLOBAL_INDEX_SERIES[symbol],
+            kind="index",
+            market="GLOBAL",
+            currency="USD",
+            unit="点",
+            chart="line",
+        )
+    if symbol in HK_SERIES:
+        name, kind = HK_SERIES[symbol]
+        return SeriesMeta(
+            symbol=symbol,
+            name=name,
+            kind=kind,  # type: ignore[arg-type]
+            market="HK",
+            currency="HKD",
+            unit="股",
+        )
     if symbol in FX_SERIES:
         name, quote_currency = FX_SERIES[symbol]
         return SeriesMeta(
@@ -178,6 +269,15 @@ def infer_meta(symbol: str, name: str | None = None) -> SeriesMeta:
     known = series_meta(symbol)
     if known:
         return known
+    if symbol.startswith("HK") and len(symbol) == 7 and symbol[2:].isdigit():
+        return SeriesMeta(
+            symbol=symbol,
+            name=name or symbol,
+            kind="stock",
+            market="HK",
+            currency="HKD",
+            unit="股",
+        )
     market = symbol[:2] if symbol[:2] in {"SH", "SZ", "BJ"} else "SH"
     return SeriesMeta(
         symbol=symbol,
@@ -201,10 +301,14 @@ def normalize_symbol(raw: str) -> str:
         code, _, market = value.partition(".")
         if market in {"SH", "SZ", "BJ"} and len(code) == 6 and code.isdigit():
             return f"{market}{code}"
+        if market == "HK" and len(code) == 5 and code.isdigit():
+            return f"HK{code}"
     if value[:2] in {"SH", "SZ", "BJ"} and len(value) == 8 and value[2:].isdigit():
         return value
     if value.isdigit() and len(value) == 6:
         return f"{'SH' if value[0] in '569' else 'SZ'}{value}"
+    if value.isdigit() and len(value) == 5:
+        return f"HK{value}"
     return value
 
 

@@ -131,6 +131,8 @@ class TdxProvider(LiveProvider):
             output: list[tuple[str, str, str, str, str]] = []
             for row in rows:
                 kind = _CATEGORY.get(row.category)
+                if kind is None and _is_lof(row):
+                    kind = "lof"
                 if kind is None:
                     continue
                 output.append(
@@ -148,6 +150,16 @@ class TdxProvider(LiveProvider):
 
     def close(self) -> None:
         self._reset()
+
+
+def _is_lof(row) -> bool:
+    code = row.full_code[2:]
+    exchange = row.exchange.lower()
+    return (
+        row.name.upper().endswith("LOF")
+        or (exchange == "sz" and code.startswith("16"))
+        or (exchange == "sh" and code.startswith("501"))
+    )
 
 
 def _tdx_code(symbol: str) -> str:

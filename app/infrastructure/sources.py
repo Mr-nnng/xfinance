@@ -20,6 +20,7 @@ from .external.base import (
     ProviderError,
     SourceUnavailable,
 )
+from .external.cnbc import CnbcProvider
 from .external.demo import DemoProvider
 from .external.frankfurter import FrankfurterProvider
 from .external.sge import SgeProvider
@@ -124,6 +125,20 @@ class ExternalSources:
                 raise SourceUnavailable(str(error)) from error
             logger.warning("Frankfurter unavailable: {}", error)
             return FetchedSeries(demo(), "demo")
+
+    def global_daily(self, symbol: str) -> FetchedBars:
+        if self.mode == "demo":
+            return FetchedBars(self.demo.daily(symbol), "demo")
+        provider = self._provider(
+            "cnbc", lambda: CnbcProvider(self.settings.upstream_timeout)
+        )
+        try:
+            return FetchedBars(provider.daily(symbol), "cnbc")
+        except Exception as error:
+            if self.mode == "live":
+                raise SourceUnavailable(str(error)) from error
+            logger.warning("CNBC unavailable for {}: {}", symbol, error)
+            return FetchedBars(self.demo.daily(symbol), "demo")
 
     def commodity_daily(self, symbol: str) -> FetchedBars:
         if self.mode == "demo":

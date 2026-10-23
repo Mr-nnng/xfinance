@@ -9,10 +9,14 @@ from zoneinfo import ZoneInfo
 from loguru import logger
 
 from ..domain.catalog import (
+    CNH_SERIES,
     COMMODITY_SERIES,
     FEATURED,
     FX_SERIES,
+    GLOBAL_INDEX_SERIES,
+    HK_SERIES,
     INDEX_SERIES,
+    US_INDEX_SERIES,
     YIELD_TENORS,
     infer_meta,
     normalize_symbol,
@@ -22,6 +26,7 @@ from ..domain.models import Bar, SeriesMeta, Snapshot, Timeframe
 from .errors import NotFound
 
 _PRICE_KINDS = {"stock", "etf", "lof", "index"}
+_A_SHARE_MARKETS = {"SH", "SZ", "BJ"}
 _SYMBOL_RE = re.compile(r"^(SH|SZ|BJ)\d{6}$")
 
 
@@ -94,6 +99,16 @@ class MarketService:
             meta = series_meta(symbol)
             if meta:
                 candidates.append(meta)
+        for series in (
+            US_INDEX_SERIES,
+            GLOBAL_INDEX_SERIES,
+            HK_SERIES,
+            CNH_SERIES,
+        ):
+            for symbol in series:
+                meta = series_meta(symbol)
+                if meta:
+                    candidates.append(meta)
         for _column, symbol, _name in YIELD_TENORS:
             meta = series_meta(symbol)
             if meta:
@@ -106,7 +121,7 @@ class MarketService:
         self, raw_symbol: str, timeframe: Timeframe = "1d", adjust: str = "none"
     ) -> tuple[SeriesMeta, list[Bar], str]:
         meta = self.meta(raw_symbol)
-        if meta.kind in _PRICE_KINDS:
+        if meta.market in _A_SHARE_MARKETS and meta.kind in _PRICE_KINDS:
             bars, source = self.s.sync.ensure_equity(meta.symbol, timeframe, adjust)
         else:
             bars, source = self.s.sync.ensure_series(meta.symbol, timeframe=timeframe)
@@ -142,8 +157,12 @@ class MarketService:
         if self.s.settings.data_mode != "demo":
             missing = [meta for meta in missing if self.is_market_open(meta)]
         if missing:
-            equity = [meta for meta in missing if meta.kind in _PRICE_KINDS]
-            series = [meta for meta in missing if meta.kind not in _PRICE_KINDS]
+            equity = [
+                meta
+                for meta in missing
+                if meta.kind in _PRICE_KINDS and meta.market in _A_SHARE_MARKETS
+            ]
+            series = [meta for meta in missing if meta not in equity]
             if equity:
                 try:
                     fetched = self.s.sources.equity_snapshots(equity)
@@ -181,7 +200,7 @@ class MarketService:
         bars = self.s.bars.tail(meta.symbol, "1d", "none", 2)
         if not bars:
             try:
-                if meta.kind in _PRICE_KINDS:
+                if meta.kind in _PRICE_KINDS and meta.market in _A_SHARE_MARKETS:
                     bars, _source = self.s.sync.ensure_equity(meta.symbol, "1d", "none")
                 else:
                     bars, _source = self.s.sync.ensure_series(meta.symbol)
@@ -208,15 +227,30 @@ class MarketService:
     @staticmethod
     def is_market_open(meta: SeriesMeta, now: datetime | None = None) -> bool:
         current = now or datetime.now(ZoneInfo("Asia/Shanghai"))
-        if current.weekday() >= 5:
-            return False
         if meta.market in {"SH", "SZ", "BJ"}:
+            if current.weekday() >= 5:
+                return False
             minutes = current.hour * 60 + current.minute
             return (9 * 60 + 30 <= minutes <= 11 * 60 + 30) or (
                 13 * 60 <= minutes <= 15 * 60
             )
+        if meta.market == "US":
+            new_york = current.astimezone(ZoneInfo("America/New_York"))
+            if new_york.weekday() >= 5:
+                return False
+            minutes = new_york.hour * 60 + new_york.minute
+            return 9 * 60 + 30 <= minutes <= 16 * 60
+        if meta.market == "HK":
+            hong_kong = current.astimezone(ZoneInfo("Asia/Hong_Kong"))
+            if hong_kong.weekday() >= 5:
+                return False
+            minutes = hong_kong.hour * 60 + hong_kong.minute
+            return (9 * 60 + 30 <= minutes <= 12 * 60) or (
+                13 * 60 <= minutes <= 16 * 60
+            )
         if meta.market in {"FX", "GLOBAL"}:
-            return True
+            new_york = current.astimezone(ZoneInfo("America/New_York"))
+            return new_york.weekday() < 5
         return False
 
     @staticmethod

@@ -55,6 +55,7 @@ const sourceLabel = {
   sina: '新浪财经',
   frankfurter: 'ECB',
   treasury: '美国财政部',
+  cnbc: 'CNBC',
   sge: '上金所',
   cache: '缓存',
   expression: '表达式',
@@ -71,10 +72,16 @@ const groups = computed(() => {
 const isEquity = computed(() =>
   ['stock', 'etf', 'lof', 'index'].includes(meta.value?.kind),
 )
+const hasVolume = computed(
+  () =>
+    ['stock', 'etf', 'lof'].includes(meta.value?.kind) ||
+    (meta.value?.kind === 'index' &&
+      ['SH', 'SZ', 'BJ'].includes(meta.value?.market)),
+)
 const canAdjust = computed(() => ['stock', 'etf', 'lof'].includes(meta.value?.kind))
 const isYield = computed(() => meta.value?.kind === 'yield')
 const hasOrderBook = computed(() => ['stock', 'etf', 'lof'].includes(meta.value?.kind))
-const showVolume = computed(() => prefs.volume && isEquity.value)
+const showVolume = computed(() => prefs.volume && hasVolume.value)
 
 const indicatorSpec = computed(() => {
   const parts = []
@@ -243,6 +250,7 @@ async function loadNumeraires() {
       { id: 'JPY', label: '日元', group: '法币', unit: '日元' },
       { id: 'EUR', label: '欧元', group: '法币', unit: '欧元' },
       { id: 'GBP', label: '英镑', group: '法币', unit: '英镑' },
+      { id: 'HKD', label: '港币', group: '法币', unit: '港币' },
       { id: 'XAU', label: '黄金', group: '贵金属', unit: '盎司' },
     ]
   }
@@ -372,8 +380,8 @@ onBeforeUnmount(() => {
             <div class="stat"><span>今开</span><strong>{{ fmtPrice(snapshot?.open) }}</strong></div>
             <div class="stat"><span>最高</span><strong>{{ fmtPrice(snapshot?.high) }}</strong></div>
             <div class="stat"><span>最低</span><strong>{{ fmtPrice(snapshot?.low) }}</strong></div>
-            <div v-if="isEquity" class="stat"><span>成交量（手）</span><strong>{{ fmtCompact(snapshot?.volume) }}</strong></div>
-            <div v-if="isEquity" class="stat"><span>成交额</span><strong>{{ fmtCompact(snapshot?.amount) }}</strong></div>
+            <div v-if="hasVolume" class="stat"><span>成交量（手）</span><strong>{{ fmtCompact(snapshot?.volume) }}</strong></div>
+            <div v-if="hasVolume" class="stat"><span>成交额</span><strong>{{ fmtCompact(snapshot?.amount) }}</strong></div>
             <div v-if="snapshot" class="stat">
               <span>更新</span><strong>{{ fmtTime(snapshot.ts) }}</strong>
             </div>

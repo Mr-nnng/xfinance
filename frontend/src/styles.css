@@ -656,6 +656,27 @@ main {
 .watch-table {
   display: flex;
   flex-direction: column;
+  max-height: 330px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.watch-table::-webkit-scrollbar {
+  width: 6px;
+}
+
+.watch-table::-webkit-scrollbar-thumb {
+  border: 0;
+  background: var(--border-strong);
+}
+
+.watch-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .watch-row {

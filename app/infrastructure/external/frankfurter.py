@@ -11,7 +11,7 @@ from ...domain.models import Bar
 from .base import LiveProvider, ProviderError
 
 _ENDPOINT = "https://api.frankfurter.dev/v1"
-_SYMBOLS = ("CNY", "JPY", "EUR", "GBP")
+_SYMBOLS = ("CNY", "JPY", "EUR", "GBP", "HKD")
 _SERIES = {currency: f"USD{currency}" for currency in _SYMBOLS}
 
 
