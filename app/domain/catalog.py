@@ -73,6 +73,7 @@ CNH_SERIES: dict[str, tuple[str, str]] = {
 }
 
 US_INDEX_SERIES: dict[str, str] = {
+    "DJI": "道琼斯",
     "SPX": "标普500",
     "IXIC": "纳斯达克",
 }
@@ -83,10 +84,16 @@ GLOBAL_INDEX_SERIES: dict[str, str] = {
 
 HK_SERIES: dict[str, tuple[str, str]] = {
     "HK00883": ("中国海洋石油", "stock"),
+    "HSI": ("恒生指数", "index"),
+}
+
+INVERSE_FX_SERIES: dict[str, tuple[str, str, str]] = {
+    "EURUSD": ("欧元/美元", "USDEUR", "USD"),
+    "GBPUSD": ("英镑/美元", "USDGBP", "USD"),
 }
 
 CNBC_SERIES: frozenset[str] = frozenset(
-    {"SPX", "IXIC", "DXY", "HK00883", "USDCNH"}
+    {"DJI", "SPX", "IXIC", "DXY", "HSI", "HK00883", "USDCNH"}
 )
 
 # Treasury CSV column -> (display name, symbol)
@@ -153,8 +160,25 @@ DEFAULT_WATCHLIST: tuple[str, ...] = (
     "DXY",
 )
 
-OVERVIEW_INDICES: tuple[str, ...] = ("SH000001", "SZ399001", "SZ399006", "SH000300")
-OVERVIEW_FX: tuple[str, ...] = ("USDCNY", "USDJPY", "USDEUR", "USDGBP")
+OVERVIEW_INDICES: tuple[str, ...] = (
+    "SH000001",
+    "SZ399001",
+    "SZ399006",
+    "SH000016",
+    "SPX",
+    "IXIC",
+    "DJI",
+    "HSI",
+)
+OVERVIEW_FX: tuple[str, ...] = (
+    "DXY",
+    "EURUSD",
+    "USDJPY",
+    "GBPUSD",
+    "USDCNY",
+    "USDCNH",
+    "USDHKD",
+)
 OVERVIEW_COMMODITIES: tuple[str, ...] = (
     "XAUUSD",
     "XAGUSD",
@@ -206,7 +230,19 @@ def series_meta(symbol: str) -> SeriesMeta | None:
             kind=kind,  # type: ignore[arg-type]
             market="HK",
             currency="HKD",
-            unit="股",
+            unit="点" if kind == "index" else "股",
+            chart="line" if kind == "index" else "candlestick",
+        )
+    if symbol in INVERSE_FX_SERIES:
+        name, _base, currency = INVERSE_FX_SERIES[symbol]
+        return SeriesMeta(
+            symbol=symbol,
+            name=name,
+            kind="fx",
+            market="FX",
+            currency=currency,
+            unit=currency,
+            chart="line",
         )
     if symbol in FX_SERIES:
         name, quote_currency = FX_SERIES[symbol]

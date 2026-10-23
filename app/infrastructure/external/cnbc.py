@@ -13,9 +13,11 @@ from .base import LiveProvider, ProviderError
 _URL = "https://ts-api.cnbc.com/harmony/app/charts/1Y.json"
 _HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) xfinance/0.1"}
 _SYMBOLS = {
+    "DJI": ".DJI",
     "SPX": ".SPX",
     "IXIC": ".IXIC",
     "DXY": ".DXY",
+    "HSI": ".HSI",
     "HK00883": "883.HK",
     "USDCNH": "CNH=",
 }

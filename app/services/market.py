@@ -16,6 +16,7 @@ from ..domain.catalog import (
     GLOBAL_INDEX_SERIES,
     HK_SERIES,
     INDEX_SERIES,
+    INVERSE_FX_SERIES,
     US_INDEX_SERIES,
     YIELD_TENORS,
     infer_meta,
@@ -104,6 +105,7 @@ class MarketService:
             GLOBAL_INDEX_SERIES,
             HK_SERIES,
             CNH_SERIES,
+            INVERSE_FX_SERIES,
         ):
             for symbol in series:
                 meta = series_meta(symbol)

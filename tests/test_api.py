@@ -25,8 +25,8 @@ def test_overview_shape(client: TestClient) -> None:
     response = client.get("/api/overview")
     assert response.status_code == 200
     data = response.json()["data"]
-    assert len(data["indices"]) == 4
-    assert len(data["fx"]) == 4
+    assert len(data["indices"]) == 8
+    assert len(data["fx"]) == 7
     assert len(data["commodities"]) == 5
     assert len(data["yields"]) == 4
     assert len(data["watchlist"]) >= 3
@@ -358,9 +358,13 @@ def test_default_watchlist_and_new_markets(client: TestClient) -> None:
     expected = {
         "SPX": ("标普500", "index", "US", "USD"),
         "IXIC": ("纳斯达克", "index", "US", "USD"),
+        "DJI": ("道琼斯", "index", "US", "USD"),
         "DXY": ("美元指数", "index", "GLOBAL", "USD"),
         "USDCNH": ("美元兑离岸人民币", "fx", "FX", "CNY"),
         "HK00883": ("中国海洋石油", "stock", "HK", "HKD"),
+        "HSI": ("恒生指数", "index", "HK", "HKD"),
+        "EURUSD": ("欧元/美元", "fx", "FX", "USD"),
+        "GBPUSD": ("英镑/美元", "fx", "FX", "USD"),
         "SZ160723": ("嘉实原油LOF", "lof", "SZ", "CNY"),
         "SH600900": ("长江电力", "stock", "SH", "CNY"),
         "SH600938": ("中国海油", "stock", "SH", "CNY"),

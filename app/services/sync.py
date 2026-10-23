@@ -9,6 +9,7 @@ from ..domain.catalog import (
     COMMODITY_SERIES,
     DEFAULT_WATCHLIST,
     FX_SERIES,
+    INVERSE_FX_SERIES,
     YIELD_TENORS,
     series_meta,
 )
@@ -111,7 +112,7 @@ class SyncService:
                 f"series:cnbc:{symbol}",
                 lambda: _single(self.s.sources.global_daily(symbol), symbol),
             )
-        if symbol in FX_SERIES:
+        if symbol in FX_SERIES or symbol in INVERSE_FX_SERIES:
             return "series:fx", lambda: self.s.sources.fx_daily()
         if any(code == symbol for _column, code, _name in YIELD_TENORS):
             return "series:yields", lambda: self.s.sources.yields_daily()

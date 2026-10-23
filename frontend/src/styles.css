@@ -656,21 +656,15 @@ main {
 .watch-table {
   display: flex;
   flex-direction: column;
-  max-height: 330px;
+  max-height: 462px;
   overflow-y: auto;
-  padding-right: 4px;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-strong) transparent;
+  padding-right: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .watch-table::-webkit-scrollbar {
-  width: 6px;
-}
-
-.watch-table::-webkit-scrollbar-thumb {
-  border: 0;
-  background: var(--border-strong);
+  display: none;
 }
 
 .watch-head-actions {

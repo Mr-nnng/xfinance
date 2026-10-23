@@ -266,7 +266,7 @@ onBeforeUnmount(() => {
               </svg>
               美元基准
             </h2>
-            <span class="panel-sub">USD → </span>
+            <span class="panel-sub">汇率</span>
           </div>
           <div class="fx-grid">
             <button

@@ -40,13 +40,17 @@ _FX_CODES = {
     "USDEUR": ("EURUSD", True),
     "USDGBP": ("GBPUSD", True),
     "USDCNH": ("fx_susdcnh", False),
+    "USDHKD": ("fx_susdhkd", False),
+    "EURUSD": ("fx_seurusd", False),
+    "GBPUSD": ("fx_sgbpusd", False),
 }
 _GLOBAL_CODES = {
+    "DJI": "gb_$dji",
     "SPX": "gb_$inx",
     "IXIC": "gb_$ixic",
     "DXY": "DINIW",
 }
-_HK_CODES = {"HK00883": "hk00883"}
+_HK_CODES = {"HK00883": "hk00883", "HSI": "hkHSI"}
 _LINE_RE = re.compile(r'var hq_str_([A-Za-z0-9_$]+)="([^"]*)";')
 _JSONP_RE = re.compile(r"^[^(]*\((.*)\)\s*;?\s*$", re.DOTALL)
 

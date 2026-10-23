@@ -11,7 +11,12 @@ from collections.abc import Callable
 from loguru import logger
 
 from ..config import Settings
-from ..domain.catalog import COMMODITY_SERIES, FX_SERIES, YIELD_TENORS
+from ..domain.catalog import (
+    COMMODITY_SERIES,
+    FX_SERIES,
+    INVERSE_FX_SERIES,
+    YIELD_TENORS,
+)
 from ..domain.models import Bar, SeriesMeta, Snapshot, Timeframe
 from .external.base import (
     FetchedBars,
@@ -110,7 +115,10 @@ class ExternalSources:
             symbol: self.demo.daily(symbol) for symbol in FX_SERIES
         }
         if self.mode == "demo":
-            return FetchedSeries(demo(), "demo")
+            series = demo()
+            for symbol, (_name, base, _currency) in INVERSE_FX_SERIES.items():
+                series[symbol] = _invert_bars(series[base])
+            return FetchedSeries(series, "demo")
         provider = self._provider(
             "frankfurter", lambda: FrankfurterProvider(self.settings.upstream_timeout)
         )
@@ -119,6 +127,8 @@ class ExternalSources:
             missing = [symbol for symbol in FX_SERIES if symbol not in series]
             if missing:
                 raise ProviderError(f"缺少汇率: {', '.join(missing)}")
+            for symbol, (_name, base, _currency) in INVERSE_FX_SERIES.items():
+                series[symbol] = _invert_bars(series[base])
             return FetchedSeries(series, provider.source)
         except Exception as error:
             if self.mode == "live":
@@ -212,6 +222,25 @@ class ExternalSources:
             except Exception:  # pragma: no cover
                 pass
         self._live.clear()
+
+
+def _invert_bars(bars: list[Bar]) -> list[Bar]:
+    output: list[Bar] = []
+    for bar in bars:
+        if bar.close <= 0 or bar.open <= 0 or bar.high <= 0 or bar.low <= 0:
+            continue
+        output.append(
+            Bar(
+                date=bar.date,
+                open=1.0 / bar.open,
+                high=1.0 / bar.low,
+                low=1.0 / bar.high,
+                close=1.0 / bar.close,
+                volume=bar.volume,
+                amount=bar.amount,
+            )
+        )
+    return output
 
 
 def _meta_for(symbol: str) -> SeriesMeta:
