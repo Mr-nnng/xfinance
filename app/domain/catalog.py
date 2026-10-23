@@ -30,6 +30,7 @@ NUMERAIRES: tuple[Numeraire, ...] = (
     Numeraire("USD", "美元", "法币", "美元", "unit"),
     Numeraire("JPY", "日元", "法币", "日元", "fiat", series="USDJPY", currency="JPY"),
     Numeraire("EUR", "欧元", "法币", "欧元", "fiat", series="USDEUR", currency="EUR"),
+    Numeraire("GBP", "英镑", "法币", "英镑", "fiat", series="USDGBP", currency="GBP"),
     Numeraire("XAU", "黄金", "贵金属", "盎司", "asset", series="XAUUSD", currency="USD"),
     Numeraire(
         "XAU_CNY_G",

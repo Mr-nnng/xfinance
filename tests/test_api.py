@@ -18,7 +18,7 @@ def test_numeraires_cover_hard_assets(client: TestClient) -> None:
     response = client.get("/api/meta/numeraires")
     assert response.status_code == 200
     ids = {item["id"] for item in response.json()["data"]}
-    assert {"CNY", "USD", "XAU", "XAU_CNY_G", "WTI", "BRENT", "XAG"} <= ids
+    assert {"CNY", "USD", "JPY", "EUR", "GBP", "XAU", "XAU_CNY_G", "WTI", "BRENT", "XAG"} <= ids
 
 
 def test_overview_shape(client: TestClient) -> None:
@@ -314,3 +314,12 @@ def test_custom_index_percentile_matches_last_series_value(client: TestClient) -
     assert values
     assert payload["stats"]["percentile"] == pytest.approx(values[-1])
     client.delete(f"/api/custom-indices/{index_id}")
+
+
+def test_gbp_pair_can_be_quoted_in_gbp(client: TestClient) -> None:
+    payload = client.get(
+        "/api/instruments/USDGBP/chart", params={"range": "1y", "numeraire": "GBP"}
+    ).json()["data"]
+    assert payload["meta"]["numeraire"]["id"] == "GBP"
+    assert payload["meta"]["quoted"] is True
+    assert 0.5 < payload["stats"]["last"] < 1.5

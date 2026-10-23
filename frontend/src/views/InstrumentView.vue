@@ -110,23 +110,45 @@ const flatChart = computed(() => {
 
 const conversion = computed(() => {
   if (!stats.value || !quoted.value || isYield.value) return null
-  const last = stats.value.native_last
-  if (!last) return null
+  const kind = meta.value?.kind
+  const price = stats.value.last
+  const unit = numeraireMeta.value.unit
   if (normalize.value) {
     return {
       normalized: true,
-      text: `起点 = 1.0000，当前 = ${fmtPrice(stats.value.last)}`,
+      text: `起点 = 1.0000，当前 = ${fmtPrice(price)}`,
     }
   }
-  const inverse = stats.value.last > 0 ? 1 / stats.value.last : null
-  return {
-    normalized: false,
-    text: `1 ${meta.value?.unit || '单位'} ≈ ${fmtPrice(stats.value.last)} ${numeraireMeta.value.unit}`,
-    inverse:
-      inverse && numeraireMeta.value.id !== meta.value?.currency
-        ? `1 ${numeraireMeta.value.unit} ≈ ${fmtPrice(inverse)} ${meta.value?.unit || '单位'}`
-        : '',
+  if (kind === 'stock' || kind === 'etf' || kind === 'lof') {
+    const inverse =
+      price > 0 && numeraireMeta.value.id !== meta.value?.currency
+        ? `1 ${unit} ≈ ${fmtPrice(1 / price)} ${meta.value?.unit || '股'}`
+        : ''
+    return {
+      normalized: false,
+      text: `1 ${meta.value?.unit || '股'} ≈ ${fmtPrice(price)} ${unit}`,
+      inverse,
+    }
   }
+  if (kind === 'index') {
+    return { normalized: false, text: `当前指数点位折算 ${fmtPrice(price)} ${unit}`, inverse: '' }
+  }
+  if (kind === 'fx') {
+    const inverse =
+      price > 0 && numeraireMeta.value.id !== 'USD'
+        ? `1 ${unit} ≈ ${fmtPrice(1 / price)} 美元`
+        : ''
+    return { normalized: false, text: `1 美元 = ${fmtPrice(price)} ${unit}`, inverse }
+  }
+  if (kind === 'commodity') {
+    const quantity = meta.value?.unit?.split('/').pop() || '单位'
+    return {
+      normalized: false,
+      text: `1 ${quantity} = ${fmtPrice(price)} ${unit}`,
+      inverse: price > 0 ? `1 ${unit} ≈ ${fmtPrice(1 / price)} ${quantity}` : '',
+    }
+  }
+  return { normalized: false, text: `当前 ${fmtPrice(price)} ${unit}`, inverse: '' }
 })
 
 const bestAsk = computed(() => snapshot.value?.asks?.[0]?.price)
@@ -164,10 +186,6 @@ async function loadMeta() {
   const response = await get(`/instruments/${symbol.value}`)
   meta.value = response.data
   if (!canAdjust.value && adjust.value !== 'none') adjust.value = 'none'
-  if (isYield.value) {
-    numeraire.value = 'CNY'
-    normalize.value = false
-  }
 }
 
 async function loadSnapshot() {
@@ -222,13 +240,23 @@ async function loadNumeraires() {
     numeraires.value = [
       { id: 'CNY', label: '人民币', group: '法币', unit: '元' },
       { id: 'USD', label: '美元', group: '法币', unit: '美元' },
+      { id: 'JPY', label: '日元', group: '法币', unit: '日元' },
+      { id: 'EUR', label: '欧元', group: '法币', unit: '欧元' },
+      { id: 'GBP', label: '英镑', group: '法币', unit: '英镑' },
       { id: 'XAU', label: '黄金', group: '贵金属', unit: '盎司' },
     ]
   }
 }
 
+function nativeNumeraire() {
+  const currency = meta.value?.currency
+  const available = new Set(numeraires.value.map((item) => item.id))
+  if (currency && available.has(currency)) return currency
+  return available.has('CNY') ? 'CNY' : numeraires.value[0]?.id || 'CNY'
+}
+
 function resetPricing() {
-  numeraire.value = 'CNY'
+  numeraire.value = nativeNumeraire()
   normalize.value = false
 }
 
@@ -238,10 +266,10 @@ async function loadAll() {
   meta.value = null
   snapshot.value = null
   chart.value = null
-  resetPricing()
   await loadNumeraires()
   try {
     await loadMeta()
+    resetPricing()
     await Promise.all([loadSnapshot(), loadChart()])
     document.title = `${meta.value.name} · xfinance`
   } catch (requestError) {
@@ -429,7 +457,7 @@ onBeforeUnmount(() => {
                 </select>
                 <button
                   class="btn btn-sm btn-ghost"
-                  title="恢复人民币计价，并关闭起点归一化"
+                  title="恢复标的原生货币计价，并关闭起点归一化"
                   :disabled="isYield"
                   @click="resetPricing"
                 >
