@@ -56,6 +56,19 @@ class SyncService:
                     return cached, self.s.sync_state.note(key) or "cache"
                 raise DataUnavailable(str(error)) from error
 
+    def is_fresh_equity(
+        self, symbol: str, timeframe: Timeframe = "1d", adjust: str = "none"
+    ) -> bool:
+        key = f"bars:{symbol}:{timeframe}:{adjust}"
+        ttl = (
+            self.s.settings.adjusted_bars_ttl
+            if adjust != "none"
+            else self.s.settings.bars_ttl
+        )
+        return bool(self.s.bars.last_date(symbol, timeframe, adjust)) and (
+            self.s.sync_state.is_fresh(key, ttl)
+        )
+
     def ensure_series(
         self, symbol: str, *, timeframe: Timeframe = "1d"
     ) -> tuple[list[Bar], str]:
@@ -121,6 +134,15 @@ class SyncService:
             except Exception as error:
                 logger.warning("security table unavailable: {}", error)
                 return count
+
+    def is_fresh_series(self, symbol: str) -> bool:
+        meta = series_meta(symbol)
+        if meta is None:
+            return False
+        group_key, _loader = self._series_plan(symbol)
+        return bool(self.s.bars.last_date(symbol, "1d", "none")) and (
+            self.s.sync_state.is_fresh(group_key, self.s.settings.series_ttl)
+        )
 
     def seed_watchlist(self) -> None:
         key = "watchlist:seeded"

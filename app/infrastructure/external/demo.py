@@ -124,10 +124,18 @@ class DemoProvider:
             self._cache[key] = generated
             return [replace(bar) for bar in generated]
 
+    def _latest_pair(self, symbol: str) -> tuple[Bar, Bar]:
+        key = (normalize_symbol(symbol), "1d")
+        with self._lock:
+            bars = self._cache.get(key)
+            if bars is None:
+                bars = self._generate(symbol)
+                self._cache[key] = bars
+            last = bars[-1]
+            return last, bars[-2] if len(bars) > 1 else last
+
     def snapshot(self, meta: SeriesMeta) -> Snapshot:
-        bars = self.daily(meta.symbol)
-        last = bars[-1]
-        previous = bars[-2] if len(bars) > 1 else last
+        last, previous = self._latest_pair(meta.symbol)
         rng = random.Random(_seed(meta.symbol) + 7)
         mid = last.close
         step = mid * 0.001

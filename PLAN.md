@@ -150,7 +150,7 @@ SQLite WAL + busy_timeout。迁移由 Alembic 管理，启动时 upgrade head。
 | 前端 | 总览、标的、自定义指数、工具箱四个页面可在 Chrome 中操作；桌面与 390px 移动端截图核验，无横向溢出 |
 | 打包 | `uv build` 产出的 wheel 含 `frontend-build` 与迁移；装进全新虚拟环境后 `xfinance-app` 可启动并托管 SPA |
 
-测试总数 83，全部离线。
+测试总数 84，全部离线。
 
 ### 实际取舍
 
@@ -184,3 +184,10 @@ SQLite WAL + busy_timeout。迁移由 Alembic 管理，启动时 upgrade head。
 - 图表坐标、图例和分位面板标签从 10px 提到 11px；弱化色从 `#617184` 提到 `#71839a`。
 - 面板头允许换行且标题不收缩，移动端标题不再被副标题挤断；订单簿行高从 21px 提到 23px。
 - 桌面 1440px 与移动 390px 复查四个页面，均无横向溢出，控制台无错误。
+
+## 轮询性能（2026-10-23）
+
+- 根因不是网络，而是总览每次轮询都通过 ORM 读取每只标的的全部历史日线。20 个标的、每个约 1600 至 2600 行，单次约 6 万个 ORM 实例，CPU 约 1.2 秒。
+- 卡片 sparkline 改用 `ORDER BY date DESC LIMIT 45` 的 `tail` 查询；同步前先检查 `sync_state` 和 `last_date`，fresh 时不再加载全量 bars。
+- 自定义指数卡片缓存与轮询对齐为 10 秒；演示快照不再复制整段历史。
+- 同一请求的 CPU 从约 1.2 秒降到约 17 毫秒（demo）和约 44 毫秒（live）；live 剩余时间主要是 TDX/新浪网络等待。

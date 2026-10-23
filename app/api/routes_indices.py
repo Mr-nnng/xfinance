@@ -36,6 +36,7 @@ def list_indices(services: ServicesDep) -> dict:
 def create(services: ServicesDep, payload: CustomIndexIn) -> dict:
     record = services.expressions.create(payload.name, payload.expression)
     services.app.overview_cache.invalidate(("overview",))
+    services.app.overview_cache.invalidate(("custom_cards",))
     return ok(
         {"id": record.id, "name": record.name, "expression": record.expression},
         source="local",
@@ -73,3 +74,4 @@ def index_chart(
 def delete_index(services: ServicesDep, index_id: int) -> None:
     services.expressions.delete(index_id)
     services.app.overview_cache.invalidate(("overview",))
+    services.app.overview_cache.invalidate(("custom_cards",))

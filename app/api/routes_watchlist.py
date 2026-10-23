@@ -17,7 +17,7 @@ def watchlist(services: ServicesDep) -> dict:
     snapshots, source = services.market.snapshots(symbols) if symbols else ({}, "local")
     cards = []
     for meta in metas:
-        bars = services.bars.fetch(meta.symbol, "1d", "none")[-45:]
+        bars = services.bars.tail(meta.symbol, "1d", "none", 45)
         cards.append(
             {
                 "meta": meta_dict(meta),

@@ -17,6 +17,7 @@ from ..domain.models import SeriesMeta, Snapshot
 from .context import Services
 
 CARD_RANGE_DAYS = 45
+CUSTOM_CARD_TTL = 10.0
 
 
 class OverviewService:
@@ -66,7 +67,10 @@ class OverviewService:
             for meta in commodity_metas
         ]
         yield_cards = [self._yield_card(meta) for meta in yield_metas]
-        custom_cards = self._custom_cards()
+        custom_cards = self.s.app.overview_cache.get(("custom_cards",))
+        if custom_cards is None:
+            custom_cards = self._custom_cards()
+            self.s.app.overview_cache.set(("custom_cards",), custom_cards, CUSTOM_CARD_TTL)
 
         sources = {snapshot_source}
         for card in indices + watch_cards + fx_cards + commodity_cards + yield_cards:
@@ -92,7 +96,7 @@ class OverviewService:
         self, meta: SeriesMeta, snapshots: dict[str, Snapshot], source: str
     ) -> dict:
         snapshot = snapshots.get(meta.symbol)
-        bars = self.s.bars.fetch(meta.symbol, "1d", "none")[-CARD_RANGE_DAYS:]
+        bars = self.s.bars.tail(meta.symbol, "1d", "none", CARD_RANGE_DAYS)
         if snapshot is None and bars:
             last = bars[-1]
             previous = bars[-2] if len(bars) > 1 else last
@@ -117,7 +121,7 @@ class OverviewService:
         }
 
     def _yield_card(self, meta: SeriesMeta) -> dict:
-        bars = self.s.bars.fetch(meta.symbol, "1d", "none")[-CARD_RANGE_DAYS:]
+        bars = self.s.bars.tail(meta.symbol, "1d", "none", CARD_RANGE_DAYS)
         last = bars[-1].close if bars else 0.0
         previous = bars[-2].close if len(bars) > 1 else last
         return {
@@ -162,8 +166,19 @@ class OverviewService:
     # -- sync ----------------------------------------------------------
 
     def _presync(self, equity_symbols: list[str], series_symbols: list[str]) -> None:
-        jobs: list[tuple[str, str]] = [("equity", symbol) for symbol in equity_symbols]
-        jobs.extend(("series", symbol) for symbol in series_symbols)
+        jobs: list[tuple[str, str]] = []
+        for symbol in equity_symbols:
+            try:
+                if not self.s.sync.is_fresh_equity(symbol):
+                    jobs.append(("equity", symbol))
+            except Exception:
+                jobs.append(("equity", symbol))
+        for symbol in series_symbols:
+            try:
+                if not self.s.sync.is_fresh_series(symbol):
+                    jobs.append(("series", symbol))
+            except Exception:
+                jobs.append(("series", symbol))
         if not jobs:
             return
 

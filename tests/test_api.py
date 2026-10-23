@@ -327,3 +327,10 @@ def test_gbp_pair_can_be_quoted_in_gbp(client: TestClient) -> None:
     assert payload["meta"]["numeraire"]["id"] == "GBP"
     assert payload["meta"]["quoted"] is True
     assert 0.5 < payload["stats"]["last"] < 1.5
+
+
+def test_overview_sparklines_use_bounded_tail(client: TestClient) -> None:
+    payload = client.get("/api/overview").json()["data"]
+    for section in ("indices", "watchlist", "fx", "commodities", "yields"):
+        for card in payload[section]:
+            assert 0 <= len(card["spark"]) <= 45

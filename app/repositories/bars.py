@@ -67,6 +67,29 @@ class BarsRepository:
             statement = statement.limit(limit)
         return [self._to_bar(row) for row in self.session.scalars(statement)]
 
+    def tail(
+        self,
+        symbol: str,
+        timeframe: str,
+        adjust: str,
+        count: int,
+    ) -> list[Bar]:
+        if count <= 0:
+            return []
+        statement = (
+            select(BarRow)
+            .where(
+                BarRow.symbol == symbol,
+                BarRow.timeframe == timeframe,
+                BarRow.adjust == adjust,
+            )
+            .order_by(BarRow.date.desc())
+            .limit(count)
+        )
+        rows = list(self.session.scalars(statement))
+        rows.reverse()
+        return [self._to_bar(row) for row in rows]
+
     def last_date(self, symbol: str, timeframe: str, adjust: str) -> date | None:
         return self.session.scalar(
             select(BarRow.date)
