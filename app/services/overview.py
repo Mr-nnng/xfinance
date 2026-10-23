@@ -157,7 +157,6 @@ class OverviewService:
                     "last": stats["last"],
                     "change_pct": stats["change_pct"],
                     "percentile": stats["percentile"],
-                    "basis": payload["meta"]["basis"],
                     "spark": [bar["close"] for bar in payload["bars"]],
                 }
             )
@@ -200,31 +199,12 @@ class OverviewService:
 
 
 def _meta_dict(meta: SeriesMeta) -> dict:
-    return {
-        "symbol": meta.symbol,
-        "name": meta.name,
-        "kind": meta.kind,
-        "market": meta.market,
-        "currency": meta.currency,
-        "unit": meta.unit,
-        "chart": meta.chart,
-        "quotable": meta.quotable,
-    }
+    return {"symbol": meta.symbol, "name": meta.name, "unit": meta.unit}
 
 
 def _snapshot_dict(snapshot: Snapshot) -> dict:
     return {
-        "symbol": snapshot.symbol,
-        "name": snapshot.name,
         "last": snapshot.last,
-        "prev_close": snapshot.prev_close,
         "change": snapshot.change,
         "change_pct": snapshot.change_pct,
-        "open": snapshot.open,
-        "high": snapshot.high,
-        "low": snapshot.low,
-        "volume": snapshot.volume,
-        "amount": snapshot.amount,
-        "ts": snapshot.ts.isoformat(timespec="seconds"),
-        "source": snapshot.source,
     }

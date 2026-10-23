@@ -73,11 +73,34 @@ async function load() {
   }
 }
 
+function nextDelay() {
+  if (data.value?.market?.is_open) return 10000
+  const next = data.value?.market?.next_open
+  const target = next ? new Date(next).getTime() : Number.NaN
+  if (!Number.isFinite(target)) return 24 * 60 * 60 * 1000
+  return Math.max(5000, target - Date.now() + 2000)
+}
+
 function schedule() {
+  window.clearTimeout(timer)
+  if (!data.value) return
   timer = window.setTimeout(async () => {
-    if (!document.hidden) await load()
+    if (document.hidden) return
+    await load()
     schedule()
-  }, 10000)
+  }, nextDelay())
+}
+
+async function refreshNow() {
+  await load()
+  schedule()
+}
+
+async function onVisibility() {
+  if (document.hidden) return
+  window.clearTimeout(timer)
+  await load()
+  schedule()
 }
 
 function open(symbol) {
@@ -105,15 +128,17 @@ function focusSearch() {
 async function onCreated() {
   dialogOpen.value = false
   push('自定义指数已创建', 'success')
-  await load()
+  await refreshNow()
 }
 
 onMounted(async () => {
+  document.addEventListener('visibilitychange', onVisibility)
   await load()
   schedule()
 })
 
 onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', onVisibility)
   window.clearTimeout(timer)
   controller?.abort()
 })
@@ -134,7 +159,7 @@ onBeforeUnmount(() => {
           <span class="badge-dot"></span>{{ market.label }}
         </span>
         <span v-if="data">更新于 {{ fmtTime(data.generated_at) }}</span>
-        <button class="icon-btn" :class="{ spin: refreshing }" title="立即刷新" @click="load">
+        <button class="icon-btn" :class="{ spin: refreshing }" title="立即刷新" @click="refreshNow">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12a9 9 0 1 1-2.64-6.36" />
             <path d="M21 3v6h-6" />
@@ -145,7 +170,7 @@ onBeforeUnmount(() => {
 
     <div v-if="error" class="banner error">
       <span>{{ error }}</span>
-      <button class="btn btn-sm" @click="load">重试</button>
+      <button class="btn btn-sm" @click="refreshNow">重试</button>
     </div>
 
     <template v-if="loading && !data">

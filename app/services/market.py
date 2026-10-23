@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from loguru import logger
@@ -224,7 +224,22 @@ class MarketService:
             "label": label,
             "as_of": now.replace(tzinfo=None).isoformat(timespec="seconds"),
             "timezone": "Asia/Shanghai",
+            "next_open": _next_open(now).isoformat(),
         }
+
+
+def _next_open(now: datetime) -> datetime:
+    """Next weekday session open in Asia/Shanghai. Holidays are not modeled."""
+    tz = ZoneInfo("Asia/Shanghai")
+    for offset in range(0, 8):
+        day = (now + timedelta(days=offset)).date()
+        if day.weekday() >= 5:
+            continue
+        for hour, minute in ((9, 30), (13, 0)):
+            candidate = datetime.combine(day, time(hour, minute), tzinfo=tz)
+            if candidate > now:
+                return candidate
+    return now + timedelta(days=1)
 
 
 def _rank(meta: SeriesMeta, query: str) -> tuple[int, int, int]:
