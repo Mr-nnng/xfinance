@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -283,3 +284,33 @@ def test_yield_spread_expression(client: TestClient) -> None:
     data = check.json()["data"]
     assert data["basis"] == "%"
     assert 0 < data["last"] < 10
+
+
+def test_au9999_chart_in_cny_is_not_flat(client: TestClient) -> None:
+    payload = client.get(
+        "/api/instruments/AU9999/chart", params={"range": "1y", "numeraire": "CNY"}
+    ).json()["data"]
+    assert payload["stats"]["high"] > payload["stats"]["low"]
+
+
+def test_same_asset_numeraire_closes_at_one(client: TestClient) -> None:
+    payload = client.get(
+        "/api/instruments/AU9999/chart",
+        params={"range": "1y", "numeraire": "XAU_CNY_G"},
+    ).json()["data"]
+    assert all(bar["close"] == pytest.approx(1.0) for bar in payload["bars"])
+
+
+def test_custom_index_percentile_matches_last_series_value(client: TestClient) -> None:
+    created = client.post(
+        "/api/custom-indices",
+        json={"name": f"分位一致性{uuid4().hex[:8]}", "expression": "XAUUSD / WTIUSD"},
+    )
+    index_id = created.json()["data"]["id"]
+    payload = client.get(
+        f"/api/custom-indices/{index_id}/chart", params={"range": "1y", "window": 60}
+    ).json()["data"]
+    values = [value for value in payload["percentile"] if value is not None]
+    assert values
+    assert payload["stats"]["percentile"] == pytest.approx(values[-1])
+    client.delete(f"/api/custom-indices/{index_id}")

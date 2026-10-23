@@ -35,7 +35,7 @@ const timeframe = ref('1d')
 const adjust = ref('qfq')
 const range = ref('1y')
 const normalize = ref(false)
-const numeraire = ref(prefs.numeraire || 'CNY')
+const numeraire = ref('CNY')
 let controller = null
 let snapshotTimer = null
 let snapController = null
@@ -101,6 +101,12 @@ const selectedUnit = computed(() => {
 })
 const quoted = computed(() => chartMeta.value?.quoted !== false && !chartMeta.value?.quote_error)
 const stats = computed(() => chart.value?.stats || null)
+const flatChart = computed(() => {
+  const bars = chart.value?.bars
+  if (!bars || bars.length < 2) return false
+  const first = bars[0].close
+  return bars.every((bar) => Math.abs(bar.close - first) <= 1e-9)
+})
 
 const conversion = computed(() => {
   if (!stats.value || !quoted.value || isYield.value) return null
@@ -221,12 +227,18 @@ async function loadNumeraires() {
   }
 }
 
+function resetPricing() {
+  numeraire.value = 'CNY'
+  normalize.value = false
+}
+
 async function loadAll() {
   loading.value = true
   error.value = ''
   meta.value = null
   snapshot.value = null
   chart.value = null
+  resetPricing()
   await loadNumeraires()
   try {
     await loadMeta()
@@ -281,7 +293,6 @@ watch(
 )
 
 watch([timeframe, adjust, numeraire, normalize, range, indicatorSpec], () => {
-  prefs.numeraire = numeraire.value
   if (!loading.value && meta.value) loadChart()
 })
 
@@ -416,6 +427,14 @@ onBeforeUnmount(() => {
                     </option>
                   </optgroup>
                 </select>
+                <button
+                  class="btn btn-sm btn-ghost"
+                  title="恢复人民币计价，并关闭起点归一化"
+                  :disabled="isYield"
+                  @click="resetPricing"
+                >
+                  重置
+                </button>
               </div>
 
               <label class="switch" :title="isYield ? '收益率不支持归一化' : '把区间起点换算为 1'">
@@ -442,6 +461,10 @@ onBeforeUnmount(() => {
 
           <div v-if="chartMeta?.quote_error" class="chart-note warn">
             计价序列不可用，已回退原生价格：{{ chartMeta.quote_error }}
+          </div>
+
+          <div v-if="flatChart" class="chart-note warn">
+            当前计价下价格恒定，可能是同一资产在用自身计价，请更换计价物。
           </div>
 
           <PriceChart

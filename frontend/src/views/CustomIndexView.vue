@@ -30,6 +30,44 @@ const windowOptions = [20, 60, 120, 250]
 const meta = computed(() => payload.value?.meta)
 const stats = computed(() => payload.value?.stats)
 
+const percentileSamples = computed(() => {
+  const values = payload.value?.percentile
+  if (!Array.isArray(values)) return []
+  return values.filter((value) => typeof value === 'number' && Number.isFinite(value))
+})
+
+const currentPercentile = computed(() => {
+  const value = stats.value?.percentile
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null
+  return Math.min(100, Math.max(0, value))
+})
+
+const percentileBins = computed(() => {
+  const counts = Array(10).fill(0)
+  for (const value of percentileSamples.value) {
+    counts[Math.min(9, Math.max(0, Math.floor(value / 10)))] += 1
+  }
+  const peak = Math.max(...counts)
+  return counts.map((count, index) => ({
+    index,
+    count,
+    label: index === 9 ? '90-100%' : `${index * 10}-${index * 10 + 9}%`,
+    height: peak ? (count / peak) * 100 : 0,
+  }))
+})
+
+const activeBin = computed(() =>
+  currentPercentile.value === null ? -1 : Math.min(9, Math.floor(currentPercentile.value / 10)),
+)
+
+const percentileState = computed(() => {
+  const value = currentPercentile.value
+  if (value === null) return '分位数据不足'
+  if (value === 0) return '当前 0% · 窗口最低'
+  if (value === 100) return '当前 100% · 窗口最高'
+  return `当前 ${value.toFixed(0)}% · 近 ${windowSize.value} 日分位`
+})
+
 async function load() {
   controller?.abort()
   controller = new AbortController()
@@ -121,7 +159,10 @@ onBeforeUnmount(() => {
 
       <div class="metrics-grid">
         <div class="metric"><span>最新</span><strong>{{ fmtPrice(stats?.last) }}</strong></div>
-        <div class="metric"><span>{{ windowSize }} 日分位</span><strong>{{ stats?.percentile?.toFixed(0) }}%</strong></div>
+        <div class="metric">
+          <span>{{ windowSize }} 日分位</span>
+          <strong>{{ currentPercentile === null ? '—' : currentPercentile.toFixed(0) + '%' }}</strong>
+        </div>
         <div class="metric"><span>区间涨跌</span><strong :class="tone(stats?.change_pct)">{{ fmtPct(stats?.change_pct) }}</strong></div>
         <div class="metric"><span>区间高低</span><strong style="font-size: 13px">{{ fmtPrice(stats?.high) }} / {{ fmtPrice(stats?.low) }}</strong></div>
       </div>
@@ -184,13 +225,45 @@ onBeforeUnmount(() => {
       <section class="panel" style="margin-top: 13px">
         <div class="panel-head">
           <h2 class="panel-title">分位分布</h2>
-          <span class="panel-sub">{{ windowSize }} 日滚动窗口 · 当前 {{ stats?.percentile?.toFixed(0) }}%</span>
+          <span class="panel-sub">
+            {{ windowSize }} 日滚动窗口 · {{ percentileSamples.length }} 个样本
+          </span>
         </div>
-        <div class="pct-bar" style="height: 6px">
-          <span class="pct-fill" :style="{ width: `${stats?.percentile ?? 0}%` }"></span>
+        <div class="pct-current">{{ percentileState }}</div>
+        <div
+          v-if="percentileSamples.length"
+          class="pct-hist"
+          role="img"
+          :aria-label="`滚动分位分布，${percentileState}`"
+        >
+          <div
+            v-for="bin in percentileBins"
+            :key="bin.index"
+            class="pct-hist-col"
+            :class="{ active: bin.index === activeBin }"
+            :title="`${bin.label} · ${bin.count} 个样本`"
+          >
+            <span v-if="bin.count" class="pct-hist-bar" :style="{ height: `${bin.height}%` }"></span>
+          </div>
         </div>
-        <div class="tool-hint" style="margin-top: 9px">
-          0% 表示处在窗口最低位，100% 表示处在最高位。当前值在最近 {{ windowSize }} 个交易日中的相对位置。
+        <div v-else class="pct-hist-empty">当前区间没有可用的滚动分位样本</div>
+        <div class="pct-track" aria-hidden="true">
+          <span
+            v-if="currentPercentile !== null"
+            class="pct-marker"
+            :style="{ left: `${currentPercentile}%` }"
+          ></span>
+        </div>
+        <div class="pct-track-axis">
+          <span>0%</span>
+          <span>50%</span>
+          <span>100%</span>
+        </div>
+        <div class="tool-hint pct-caption">
+          柱高表示滚动分位落在该区间的样本占比。0% 表示当前值处于窗口最低位，是有效值。
+        </div>
+        <div class="tool-hint" style="margin-top: 4px">
+          100% 表示处在最高位。当前值在最近 {{ windowSize }} 个交易日中的相对位置。
         </div>
       </section>
     </template>

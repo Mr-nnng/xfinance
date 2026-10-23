@@ -9,14 +9,15 @@ const defaults = {
   macd: true,
   rsi: false,
   kdj: false,
-  numeraire: 'CNY',
 }
 
 function load() {
   try {
     const raw = window.localStorage.getItem(KEY)
     if (!raw) return { ...defaults }
-    return { ...defaults, ...JSON.parse(raw) }
+    const parsed = JSON.parse(raw)
+    delete parsed.numeraire
+    return { ...defaults, ...parsed }
   } catch {
     return { ...defaults }
   }

@@ -945,6 +945,106 @@ main {
   letter-spacing: 0.04em;
 }
 
+/* ---------- percentile distribution ---------- */
+
+.pct-current {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pct-hist {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  width: 100%;
+  max-width: 520px;
+  height: 68px;
+  margin-top: 12px;
+}
+
+.pct-hist-col {
+  display: flex;
+  flex: 1 1 0;
+  align-items: flex-end;
+  min-width: 0;
+  height: 100%;
+  padding: 0 1px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pct-hist-col.active {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px rgba(240, 179, 91, 0.32);
+}
+
+.pct-hist-bar {
+  display: block;
+  width: 100%;
+  min-height: 2px;
+  border-radius: 3px;
+  background: var(--blue);
+  opacity: 0.5;
+}
+
+.pct-hist-col.active .pct-hist-bar {
+  background: linear-gradient(180deg, var(--accent), var(--blue));
+  opacity: 1;
+}
+
+.pct-hist-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 520px;
+  height: 68px;
+  margin-top: 12px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--faint);
+  font-size: 10px;
+}
+
+.pct-track {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  height: 4px;
+  margin-top: 14px;
+  border-radius: 999px;
+  background: var(--panel-3);
+}
+
+.pct-marker {
+  position: absolute;
+  top: -5px;
+  width: 2px;
+  height: 14px;
+  border-radius: 1px;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px rgba(240, 179, 91, 0.16);
+  transform: translateX(-50%);
+}
+
+.pct-track-axis {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 520px;
+  margin-top: 7px;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+
+.pct-caption {
+  margin-top: 9px;
+}
+
 /* ---------- buttons / chips / forms ---------- */
 
 .btn {
@@ -2107,6 +2207,13 @@ textarea.input {
   }
   .seg button {
     padding: 0 8px;
+  }
+  .pct-hist,
+  .pct-hist-empty {
+    height: 56px;
+  }
+  .pct-hist {
+    gap: 3px;
   }
   .side-panel {
     grid-template-columns: minmax(0, 1fr);
