@@ -154,7 +154,7 @@ onBeforeUnmount(() => {
             <span v-for="reference in payload.references" :key="reference.symbol" class="ref-chip">
               <b>{{ kindLabel(reference.kind) }}</b>{{ reference.symbol }} · {{ reference.name }}
             </span>
-            <span class="ref-chip"><b>basis</b>{{ meta.basis }}</span>
+            <span class="ref-chip"><b>basis</b>{{ meta.basis === 'native' ? '原币' : meta.basis }}</span>
           </div>
         </div>
         <div class="detail-quote">
@@ -229,7 +229,7 @@ onBeforeUnmount(() => {
         <div v-else class="chart-empty">表达式没有可用数据</div>
 
         <div class="chart-note">
-          价格序列先折算为美元，收益率序列保持百分比 · 当前区间 {{ payload?.bars?.length || 0 }} 个点
+          价格按各标的原币计算，不做汇率折算；收益率序列保持百分比 · 当前区间 {{ payload?.bars?.length || 0 }} 个点
         </div>
       </section>
 

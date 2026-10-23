@@ -119,7 +119,7 @@ onBeforeUnmount(() => {
           <div class="modal-head">
             <div>
               <h2 id="new-index-title">新建自定义指数</h2>
-              <p>用四则运算组合行情序列。所有价格会先折算成美元，收益率序列按原值参与。</p>
+              <p>用四则运算组合行情序列。价格按各标的原币计算，不做汇率折算；跨币种含义由你自己判断。</p>
             </div>
             <button class="icon-btn" aria-label="关闭" @click="close">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -167,7 +167,7 @@ onBeforeUnmount(() => {
             <div class="expr-preview-head">
               <span>预览</span>
               <span v-if="validation.status === 'ok'">
-                {{ validation.data.references.length }} 个引用 · 基准 {{ validation.data.basis }}
+                {{ validation.data.references.length }} 个引用 · 基准 {{ validation.data.basis === 'native' ? '原币' : validation.data.basis }}
               </span>
             </div>
 

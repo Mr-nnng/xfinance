@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from ..domain.catalog import FX_SERIES
 from ..domain.expression import (
     ExpressionError,
     Node,
@@ -17,7 +16,6 @@ from ..domain.expression import (
     validate as validate_syntax,
 )
 from ..domain.models import Bar, NumericSeries, StoredCustomIndex
-from ..domain.pricing import AsofSeries
 from ..domain.stats import lttb_indices, percentile_of_last, rolling_percentile
 from ..repositories.indices import NameTaken
 from .chart import RANGES, _range_start
@@ -217,12 +215,9 @@ class ExpressionService:
             meta = self.s.market.meta(ref.symbol)
             _meta, bars, _source = self.s.market.daily(meta.symbol)
             kinds.add("yield" if meta.kind == "yield" else "price")
-            if meta.kind == "yield":
-                closes = NumericSeries(
-                    tuple(bar.date for bar in bars), tuple(bar.close for bar in bars)
-                )
-            else:
-                closes = self._usd_closes(meta, bars)
+            closes = NumericSeries(
+                tuple(bar.date for bar in bars), tuple(bar.close for bar in bars)
+            )
             cache[key] = closes
             info[meta.symbol] = {
                 "symbol": meta.symbol,
@@ -231,26 +226,7 @@ class ExpressionService:
             }
         if "yield" in kinds and "price" in kinds:
             raise BadRequest("收益率序列不能与价格序列混用")
-        basis = "%" if kinds == {"yield"} else "USD"
+        basis = "%" if kinds == {"yield"} else "native"
         series = evaluate(node, lambda symbol, custom: cache[(symbol, custom)])
         return ResolvedExpression(series, tuple(info.values()), basis)
 
-    def _usd_closes(self, meta, bars: list[Bar]) -> NumericSeries:
-        if meta.currency == "USD":
-            return NumericSeries(
-                tuple(bar.date for bar in bars), tuple(bar.close for bar in bars)
-            )
-        symbol = f"USD{meta.currency}"
-        if symbol not in FX_SERIES:
-            raise BadRequest(f"缺少 {meta.currency} 的汇率序列")
-        fx_bars, _source = self.s.sync.ensure_series(symbol)
-        fx = AsofSeries.from_bars(fx_bars)
-        dates: list = []
-        values: list[float] = []
-        for bar in bars:
-            rate = fx.at(bar.date)
-            if rate is None or rate <= 0:
-                continue
-            dates.append(bar.date)
-            values.append(bar.close / rate)
-        return NumericSeries(tuple(dates), tuple(values))

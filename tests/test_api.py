@@ -121,7 +121,7 @@ def test_custom_index_lifecycle(client: TestClient) -> None:
         "/api/custom-indices/validate", json={"expression": "XAUUSD / WTIUSD"}
     )
     assert check.status_code == 200
-    assert check.json()["data"]["basis"] == "USD"
+    assert check.json()["data"]["basis"] == "native"
     created = client.post(
         "/api/custom-indices",
         json={"name": unique, "expression": "XAUUSD / WTIUSD"},
@@ -252,6 +252,22 @@ def test_overview_reflects_new_custom_index(client: TestClient) -> None:
     index_id = created.json()["data"]["id"]
     overview = client.get("/api/overview").json()["data"]
     assert any(card["id"] == index_id for card in overview["custom_indices"])
+    client.delete(f"/api/custom-indices/{index_id}")
+
+
+def test_custom_index_uses_native_prices(client: TestClient) -> None:
+    native = client.get(
+        "/api/instruments/SH600519/chart", params={"range": "1y"}
+    ).json()["data"]["stats"]["last"]
+    created = client.post(
+        "/api/custom-indices",
+        json={"name": f"原币价格{uuid4().hex[:8]}", "expression": "SH600519 / 1"},
+    )
+    assert created.status_code == 201
+    index_id = created.json()["data"]["id"]
+    data = client.get(f"/api/custom-indices/{index_id}/chart").json()["data"]
+    assert data["meta"]["basis"] == "native"
+    assert data["stats"]["last"] == pytest.approx(native)
     client.delete(f"/api/custom-indices/{index_id}")
 
 
