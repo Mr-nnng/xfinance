@@ -136,9 +136,9 @@ function build() {
     autoSize: true,
     layout: {
       background: { type: 'solid', color: 'transparent' },
-      textColor: '#7f8ea3',
+      textColor: '#8b9bb0',
       fontFamily: "'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace",
-      fontSize: 10,
+      fontSize: 11,
       attributionLogo: false,
       panes: {
         enableResize: false,

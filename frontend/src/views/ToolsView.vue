@@ -263,7 +263,7 @@ onMounted(async () => {
             </div>
             <LineChart :series="dcaSeries" :height="280" />
             <div class="panel-head" style="margin-top: 18px">
-              <h3 class="panel-title" style="font-size: 12px">最近买入</h3>
+              <h3 class="panel-title" style="font-size: 13px">最近买入</h3>
               <span class="panel-sub">
                 {{ dcaResult.meta.name }} · {{ dcaResult.metrics.purchases }} 次 · 标的回撤
                 {{ fmtPct(-dcaResult.metrics.max_drawdown_pct) }}
@@ -332,7 +332,7 @@ onMounted(async () => {
           <div v-if="corrError" class="banner error"><span>{{ corrError }}</span></div>
           <template v-if="corrResult">
             <div class="panel-head">
-              <h3 class="panel-title" style="font-size: 12px">相关系数</h3>
+              <h3 class="panel-title" style="font-size: 13px">相关系数</h3>
               <span class="panel-sub">
                 {{ corrResult.start }} → {{ corrResult.end }} · {{ corrResult.window }} 个交易日 ·
                 {{ corrResult.numeraire.label }}

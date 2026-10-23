@@ -8,7 +8,7 @@
   --border-strong: #2b3d50;
   --text: #e9eef5;
   --muted: #93a1b3;
-  --faint: #617184;
+  --faint: #71839a;
   --accent: #f0b35b;
   --accent-soft: rgba(240, 179, 91, 0.12);
   --blue: #6aa9ff;
@@ -46,7 +46,7 @@ body {
     var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
@@ -181,7 +181,7 @@ button {
   display: block;
   margin-top: 2px;
   color: var(--faint);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -196,7 +196,7 @@ button {
   padding: 8px 14px;
   border-radius: 999px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   transition: color 0.18s ease, background 0.18s ease;
 }
 
@@ -227,7 +227,7 @@ button {
   border-radius: 999px;
   background: rgba(13, 19, 26, 0.7);
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -248,7 +248,7 @@ button {
   padding: 3px 7px;
   border-radius: 5px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   border: 1px solid var(--border);
   color: var(--faint);
@@ -305,7 +305,7 @@ button {
   border: 1px solid var(--border);
   background: rgba(13, 19, 26, 0.9);
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   transition: border-color 0.18s ease, background 0.18s ease;
 }
 
@@ -327,7 +327,7 @@ button {
   border: 1px solid var(--border);
   color: var(--faint);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   pointer-events: none;
 }
 
@@ -365,13 +365,13 @@ button {
 
 .search-result .code {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--faint);
   min-width: 74px;
 }
 
 .search-result .name {
-  font-size: 13px;
+  font-size: 14px;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -379,7 +379,7 @@ button {
 }
 
 .search-result .kind {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--faint);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -389,7 +389,7 @@ button {
 .search-empty {
   padding: 14px;
   color: var(--faint);
-  font-size: 12px;
+  font-size: 13px;
   text-align: center;
 }
 
@@ -416,7 +416,7 @@ main {
 .eyebrow {
   margin: 0 0 8px;
   color: var(--accent);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -433,7 +433,7 @@ main {
 .page-sub {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .head-meta {
@@ -441,7 +441,7 @@ main {
   align-items: center;
   gap: 14px;
   color: var(--faint);
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -491,7 +491,7 @@ main {
   align-items: center;
   gap: 9px;
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.01em;
 }
@@ -506,7 +506,7 @@ main {
 
 .section-note {
   color: var(--faint);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .linkish {
@@ -514,7 +514,7 @@ main {
   background: none;
   padding: 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   transition: color 0.18s ease;
 }
 
@@ -560,13 +560,13 @@ main {
 }
 
 .card-name {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
 }
 
 .card-symbol {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--faint);
 }
 
@@ -586,7 +586,7 @@ main {
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .card-spark {
@@ -599,7 +599,7 @@ main {
   justify-content: space-between;
   padding: 0 0 12px;
   color: var(--faint);
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--font-mono);
 }
 
@@ -626,7 +626,8 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 6px 14px;
   margin-bottom: 14px;
 }
 
@@ -634,8 +635,9 @@ main {
   margin: 0;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -645,7 +647,7 @@ main {
 
 .panel-sub {
   color: var(--faint);
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--font-mono);
 }
 
@@ -684,7 +686,7 @@ main {
 
 .watch-name strong {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 550;
   white-space: nowrap;
   overflow: hidden;
@@ -694,7 +696,7 @@ main {
 .watch-name span {
   color: var(--faint);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .watch-spark {
@@ -705,14 +707,14 @@ main {
 .watch-price {
   text-align: right;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 
 .watch-change {
   text-align: right;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .row-remove {
@@ -760,7 +762,7 @@ main {
 }
 
 .fx-pair {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 
@@ -773,7 +775,7 @@ main {
 
 .fx-delta {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .commodity-grid {
@@ -797,7 +799,7 @@ main {
 }
 
 .commodity-name {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
@@ -812,7 +814,7 @@ main {
 
 .commodity-unit {
   color: var(--faint);
-  font-size: 9px;
+  font-size: 11px;
   white-space: nowrap;
 }
 
@@ -853,7 +855,7 @@ main {
 
 .tenor {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 
@@ -873,7 +875,7 @@ main {
 .yield-value {
   text-align: right;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 /* ---------- custom indices ---------- */
@@ -904,7 +906,7 @@ main {
   margin-top: 2px;
   color: var(--faint);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -940,7 +942,7 @@ main {
 .pct-label {
   margin-top: 5px;
   color: var(--faint);
-  font-size: 9px;
+  font-size: 11px;
   font-family: var(--font-mono);
   letter-spacing: 0.04em;
 }
@@ -950,7 +952,7 @@ main {
 .pct-current {
   color: var(--accent);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1005,7 +1007,7 @@ main {
   border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
   color: var(--faint);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .pct-track {
@@ -1037,7 +1039,7 @@ main {
   margin-top: 7px;
   color: var(--faint);
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.04em;
 }
 
@@ -1058,7 +1060,7 @@ main {
   border-radius: 9px;
   background: var(--panel-2);
   color: var(--text);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   transition: border-color 0.18s ease, background 0.18s ease, opacity 0.18s ease;
 }
@@ -1092,7 +1094,7 @@ main {
 .btn-sm {
   height: 30px;
   padding: 0 10px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .btn-danger {
@@ -1108,7 +1110,7 @@ main {
   padding: 2px 7px;
   border-radius: 5px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   border: 1px solid var(--border);
   color: var(--muted);
   background: rgba(255, 255, 255, 0.018);
@@ -1148,7 +1150,7 @@ main {
 
 .field label {
   color: var(--faint);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -1202,7 +1204,7 @@ textarea.input {
   align-items: center;
   gap: 7px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   user-select: none;
   cursor: pointer;
 }
@@ -1264,7 +1266,7 @@ textarea.input {
   align-items: center;
   gap: 5px;
   color: var(--faint);
-  font-size: 11px;
+  font-size: 12px;
   border: 0;
   background: none;
   padding: 0;
@@ -1286,7 +1288,7 @@ textarea.input {
 
 .detail-code {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--faint);
   font-weight: 400;
 }
@@ -1294,7 +1296,7 @@ textarea.input {
 .detail-sub {
   margin-top: 5px;
   color: var(--faint);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .detail-quote {
@@ -1312,7 +1314,7 @@ textarea.input {
 .detail-delta {
   margin-top: 6px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .detail-stats {
@@ -1330,14 +1332,14 @@ textarea.input {
 
 .stat span {
   color: var(--faint);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .stat strong {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
@@ -1380,7 +1382,7 @@ textarea.input {
 
 .toolbar-label {
   color: var(--faint);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-right: 3px;
@@ -1401,7 +1403,7 @@ textarea.input {
   border-radius: 6px;
   background: transparent;
   color: var(--faint);
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--font-mono);
   transition: color 0.15s ease, background 0.15s ease;
 }
@@ -1447,7 +1449,7 @@ textarea.input {
   padding: 7px 6px;
   border-radius: 6px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -1463,14 +1465,14 @@ textarea.input {
   padding: 10px 14px 0;
   min-height: 26px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--faint);
 }
 
 .legend-title {
   color: var(--text);
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 550;
 }
 
@@ -1496,7 +1498,7 @@ textarea.input {
 .chart-note {
   padding: 8px 14px 12px;
   color: var(--faint);
-  font-size: 10px;
+  font-size: 11px;
   border-top: 1px solid rgba(255, 255, 255, 0.035);
 }
 
@@ -1509,7 +1511,7 @@ textarea.input {
   place-items: center;
   height: 470px;
   color: var(--faint);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .side-panel {
@@ -1541,9 +1543,9 @@ textarea.input {
   grid-template-columns: 30px 1fr 68px 48px;
   align-items: center;
   gap: 8px;
-  height: 21px;
+  height: 23px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .book-label {
@@ -1591,7 +1593,7 @@ textarea.input {
   background: rgba(240, 179, 91, 0.055);
   border: 1px solid rgba(240, 179, 91, 0.16);
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.6;
 }
 
@@ -1611,7 +1613,7 @@ textarea.input {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .meta-row span {
@@ -1649,7 +1651,7 @@ textarea.input {
   background: var(--bg-soft);
   color: var(--muted);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .ref-list {
@@ -1668,7 +1670,7 @@ textarea.input {
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.02);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
 }
 
@@ -1697,7 +1699,7 @@ textarea.input {
   border-radius: 8px;
   background: transparent;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .tool-tabs button.active {
@@ -1721,7 +1723,7 @@ textarea.input {
 
 .tool-hint {
   color: var(--faint);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.6;
 }
 
@@ -1742,7 +1744,7 @@ textarea.input {
 .metric span {
   display: block;
   color: var(--faint);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -1759,7 +1761,7 @@ textarea.input {
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .data-table th {
@@ -1767,7 +1769,7 @@ textarea.input {
   text-align: right;
   color: var(--faint);
   font-weight: 500;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   border-bottom: 1px solid var(--border);
@@ -1807,7 +1809,7 @@ textarea.input {
   justify-content: flex-end;
   padding-right: 6px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
   color: var(--faint);
   white-space: nowrap;
   overflow: hidden;
@@ -1820,7 +1822,7 @@ textarea.input {
   justify-content: center;
   padding: 0 2px 6px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
   color: var(--faint);
   white-space: nowrap;
   overflow: hidden;
@@ -1833,7 +1835,7 @@ textarea.input {
   min-height: 46px;
   border-radius: 6px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
@@ -1843,7 +1845,7 @@ textarea.input {
   gap: 8px;
   margin-top: 12px;
   color: var(--faint);
-  font-size: 9px;
+  font-size: 11px;
   font-family: var(--font-mono);
 }
 
@@ -1896,7 +1898,7 @@ textarea.input {
 .modal-head p {
   margin: 5px 0 0;
   color: var(--faint);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .modal-actions {
@@ -1921,7 +1923,7 @@ textarea.input {
   justify-content: space-between;
   gap: 10px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--faint);
 }
 
@@ -1932,7 +1934,7 @@ textarea.input {
 
 .expr-error {
   color: var(--up);
-  font-size: 11px;
+  font-size: 12px;
   margin-top: 12px;
 }
 
@@ -1950,7 +1952,7 @@ textarea.input {
   background: transparent;
   color: var(--faint);
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .example-chip:hover {
@@ -1971,7 +1973,7 @@ textarea.input {
   border-radius: 10px;
   background: rgba(240, 179, 91, 0.06);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .banner.error {
@@ -2053,7 +2055,7 @@ textarea.input {
   background: #0f1721;
   box-shadow: var(--shadow);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .toast.success {
@@ -2073,14 +2075,14 @@ textarea.input {
   gap: 16px;
   flex-wrap: wrap;
   color: var(--faint);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .empty-state {
   padding: 34px 16px;
   text-align: center;
   color: var(--faint);
-  font-size: 12px;
+  font-size: 13px;
   border: 1px dashed var(--border);
   border-radius: 10px;
 }
@@ -2282,7 +2284,7 @@ textarea.input {
   left: 10px;
   color: var(--faint);
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.06em;
   background: rgba(13, 19, 26, 0.75);
   padding: 1px 5px;
@@ -2322,7 +2324,7 @@ textarea.input {
   gap: 16px;
   flex-wrap: wrap;
   color: var(--faint);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .app-footer a {

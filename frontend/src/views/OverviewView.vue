@@ -321,7 +321,7 @@ onBeforeUnmount(() => {
               </span>
               <span class="yield-value">
                 {{ card.value?.toFixed(2) }}%
-                <span :class="tone(card.change_bp)" style="font-size: 9px">
+                <span :class="tone(card.change_bp)" style="font-size: 11px">
                   {{ card.change_bp > 0 ? '+' : '' }}{{ card.change_bp?.toFixed(1) }}
                 </span>
               </span>
