@@ -8,7 +8,7 @@ import {
   LineStyle,
   createChart,
 } from 'lightweight-charts'
-import { fmtCompact, fmtPct, fmtPrice, tone } from '../utils'
+import { fmtCompact, fmtPct, fmtPrice, formatChartDate, formatChartTick, tone } from '../utils'
 
 const props = defineProps({
   bars: { type: Array, default: () => [] },
@@ -177,12 +177,14 @@ function build() {
       minBarSpacing: 2,
       timeVisible: false,
       secondsVisible: false,
+      tickMarkFormatter: formatChartTick,
     },
     handleScroll: { mouseWheel: true, pressedMouseMove: true },
     handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
     localization: {
       locale: 'zh-CN',
       priceFormatter: (value) => fmtPrice(value),
+      timeFormatter: formatChartDate,
     },
   })
 
@@ -426,7 +428,7 @@ watch(
         <span v-for="item in maLegend" :key="item.label" class="legend-ohlc" :style="{ color: item.value === null ? '#617184' : undefined }">
           <span>{{ item.label }} <b>{{ item.value === null ? '—' : fmtPrice(item.value) }}</b></span>
         </span>
-        <span class="legend-ohlc" style="margin-left: auto">{{ legendBar.time }}</span>
+        <span class="legend-ohlc" style="margin-left: auto">{{ formatChartDate(legendBar.time) }}</span>
       </template>
     </div>
     <div class="chart-plot">

@@ -97,3 +97,54 @@ export const KIND_LABEL = {
 export function kindLabel(kind) {
   return KIND_LABEL[kind] || kind
 }
+
+function chartDateParts(value) {
+  if (typeof value === 'string') {
+    const match = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(value)
+    if (match) {
+      return { year: Number(match[1]), month: Number(match[2]), day: Number(match[3]) }
+    }
+    const parsed = new Date(value)
+    if (Number.isNaN(parsed.getTime())) return null
+    return {
+      year: parsed.getFullYear(),
+      month: parsed.getMonth() + 1,
+      day: parsed.getDate(),
+    }
+  }
+  if (typeof value === 'number') {
+    const date = new Date(value * 1000)
+    return {
+      year: date.getUTCFullYear(),
+      month: date.getUTCMonth() + 1,
+      day: date.getUTCDate(),
+      hour: date.getUTCHours(),
+      minute: date.getUTCMinutes(),
+    }
+  }
+  if (value && typeof value === 'object' && 'year' in value) {
+    return { year: value.year, month: value.month, day: value.day }
+  }
+  return null
+}
+
+export function formatChartDate(value) {
+  const parts = chartDateParts(value)
+  if (!parts) return ''
+  return `${parts.year}年${parts.month}月${parts.day}日`
+}
+
+export function formatChartTick(value, tickMarkType) {
+  const parts = chartDateParts(value)
+  if (!parts) return ''
+  const month = String(parts.month).padStart(2, '0')
+  const day = String(parts.day).padStart(2, '0')
+  if (tickMarkType === 0) return `${parts.year}年`
+  if (tickMarkType === 1) return `${parts.year}-${month}`
+  if (tickMarkType >= 3) {
+    const hour = String(parts.hour ?? 0).padStart(2, '0')
+    const minute = String(parts.minute ?? 0).padStart(2, '0')
+    return `${parts.year}-${month}-${day} ${hour}:${minute}`
+  }
+  return `${parts.year}-${month}-${day}`
+}

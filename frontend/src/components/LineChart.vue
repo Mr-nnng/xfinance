@@ -7,7 +7,7 @@ import {
   LineStyle,
   createChart,
 } from 'lightweight-charts'
-import { fmtPrice } from '../utils'
+import { fmtPrice, formatChartDate, formatChartTick } from '../utils'
 
 const props = defineProps({
   series: { type: Array, default: () => [] },
@@ -52,8 +52,18 @@ function build() {
       horzLine: { color: 'rgba(240,179,91,0.25)', width: 1, style: LineStyle.Dashed, labelBackgroundColor: '#1d2836' },
     },
     rightPriceScale: { borderVisible: false, entireTextOnly: true },
-    timeScale: { borderVisible: false, rightOffset: 2, barSpacing: 6, minBarSpacing: 2 },
-    localization: { locale: 'zh-CN', priceFormatter: format },
+    timeScale: {
+      borderVisible: false,
+      rightOffset: 2,
+      barSpacing: 6,
+      minBarSpacing: 2,
+      tickMarkFormatter: formatChartTick,
+    },
+    localization: {
+      locale: 'zh-CN',
+      priceFormatter: format,
+      timeFormatter: formatChartDate,
+    },
   })
 
   for (const item of props.series) {
