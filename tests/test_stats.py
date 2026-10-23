@@ -122,10 +122,10 @@ def test_rolling_percentile() -> None:
     values = [1.0, 2.0, 3.0, 0.0]
     result = rolling_percentile(values, 3)
     assert result[0] is None
-    assert result[1] == pytest.approx(100.0)
-    assert result[2] == pytest.approx(100.0)
-    assert result[3] == pytest.approx(0.0)
-    assert percentile_of_last(values, 3) == pytest.approx(0.0)
+    assert result[1] == pytest.approx(75.0)
+    assert result[2] == pytest.approx(250.0 / 3.0)
+    assert result[3] == pytest.approx(100.0 / 6.0)
+    assert percentile_of_last(values, 3) == pytest.approx(100.0 / 6.0)
 
 
 def test_bucket_indices_cover_every_sample() -> None:

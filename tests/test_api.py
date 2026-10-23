@@ -312,7 +312,11 @@ def test_custom_index_percentile_matches_last_series_value(client: TestClient) -
     ).json()["data"]
     values = [value for value in payload["percentile"] if value is not None]
     assert values
-    assert payload["stats"]["percentile"] == pytest.approx(values[-1])
+    stats = payload["stats"]
+    assert stats["percentile"] == pytest.approx(values[-1])
+    assert stats["window_low"] in (True, False)
+    assert stats["window_high"] in (True, False)
+    assert 0 <= stats["history_percentile"] <= 100
     client.delete(f"/api/custom-indices/{index_id}")
 
 

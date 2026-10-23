@@ -131,6 +131,10 @@ class ExpressionService:
         first = values[0]
         last = values[-1]
         current_percentile = percentile_of_last(resolved.series.values, window)
+        window_values = resolved.series.values[-window:]
+        history_percentile = percentile_of_last(
+            resolved.series.values, len(resolved.series.values)
+        )
         payload = {
             "meta": {
                 "id": record.id,
@@ -162,6 +166,9 @@ class ExpressionService:
                 "high": max(values),
                 "low": min(values),
                 "percentile": current_percentile,
+                "window_low": last <= min(window_values),
+                "window_high": last >= max(window_values),
+                "history_percentile": history_percentile,
                 "points": len(values),
             },
             "references": list(resolved.references),

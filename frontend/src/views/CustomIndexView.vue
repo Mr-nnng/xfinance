@@ -60,12 +60,23 @@ const activeBin = computed(() =>
   currentPercentile.value === null ? -1 : Math.min(9, Math.floor(currentPercentile.value / 10)),
 )
 
+const historyPercentile = computed(() => {
+  const value = stats.value?.history_percentile
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+})
+
+function formatPercentile(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return '—'
+  return value < 10 ? value.toFixed(1) : value.toFixed(0)
+}
+
 const percentileState = computed(() => {
   const value = currentPercentile.value
   if (value === null) return '分位数据不足'
-  if (value === 0) return '当前 0% · 窗口最低'
-  if (value === 100) return '当前 100% · 窗口最高'
-  return `当前 ${value.toFixed(0)}% · 近 ${windowSize.value} 日分位`
+  const text = `当前 ${formatPercentile(value)}%`
+  if (stats.value?.window_low) return `${text} · 窗口最低`
+  if (stats.value?.window_high) return `${text} · 窗口最高`
+  return `${text} · 近 ${windowSize.value} 日分位`
 })
 
 async function load() {
@@ -161,7 +172,7 @@ onBeforeUnmount(() => {
         <div class="metric"><span>最新</span><strong>{{ fmtPrice(stats?.last) }}</strong></div>
         <div class="metric">
           <span>{{ windowSize }} 日分位</span>
-          <strong>{{ currentPercentile === null ? '—' : currentPercentile.toFixed(0) + '%' }}</strong>
+          <strong>{{ currentPercentile === null ? '—' : formatPercentile(currentPercentile) + '%' }}</strong>
         </div>
         <div class="metric"><span>区间涨跌</span><strong :class="tone(stats?.change_pct)">{{ fmtPct(stats?.change_pct) }}</strong></div>
         <div class="metric"><span>区间高低</span><strong style="font-size: 13px">{{ fmtPrice(stats?.high) }} / {{ fmtPrice(stats?.low) }}</strong></div>
@@ -227,6 +238,9 @@ onBeforeUnmount(() => {
           <h2 class="panel-title">分位分布</h2>
           <span class="panel-sub">
             {{ windowSize }} 日滚动窗口 · {{ percentileSamples.length }} 个样本
+            <template v-if="historyPercentile !== null">
+              · 全历史分位 {{ formatPercentile(historyPercentile) }}%
+            </template>
           </span>
         </div>
         <div class="pct-current">{{ percentileState }}</div>
@@ -260,10 +274,10 @@ onBeforeUnmount(() => {
           <span>100%</span>
         </div>
         <div class="tool-hint pct-caption">
-          柱高表示滚动分位落在该区间的样本占比。0% 表示当前值处于窗口最低位，是有效值。
+          柱高表示滚动分位落在该区间的样本占比。窗口最低值约为 1/(2×窗口长度)，不会显示为 0。
         </div>
         <div class="tool-hint" style="margin-top: 4px">
-          100% 表示处在最高位。当前值在最近 {{ windowSize }} 个交易日中的相对位置。
+          当前值在最近 {{ windowSize }} 个交易日中的相对位置。全历史分位使用全部可用数据。
         </div>
       </section>
     </template>

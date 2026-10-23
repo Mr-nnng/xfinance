@@ -280,13 +280,17 @@ def percentile_of_last(values: Sequence[float], window: int) -> float | None:
 
 
 def _rank_percentile(sample: Sequence[float]) -> float:
-    """Rank percentile with the current sample included; min=0, max=100."""
+    """Mean-rank percentile with the current sample included.
+
+    A valid observation never gets exactly 0. The minimum is about 1/(2n)%
+    and the maximum is just below 100%, so 0 can stay reserved for missing data.
+    """
     current = sample[-1]
     below = sum(1 for item in sample if item < current)
     equal = sum(1 for item in sample if item == current)
     if len(sample) < 2:
         return 50.0
-    return (below + 0.5 * (equal - 1)) / (len(sample) - 1) * 100.0
+    return (below + 0.5 * equal) / len(sample) * 100.0
 
 
 def bucket_end_indices(length: int, target: int) -> list[int]:
