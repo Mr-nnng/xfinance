@@ -41,7 +41,7 @@ def main(argv: list[str] | None = None) -> int:
     signal.signal(signal.SIGTERM, _interrupt)
     parser = argparse.ArgumentParser(description="xfinance 开发服务器")
     parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--backend-port", type=int, default=8000)
+    parser.add_argument("--backend-port", type=int, default=28473)
     parser.add_argument("--frontend-port", type=int, default=5173)
     parser.add_argument("--data-mode", choices=["auto", "live", "demo"], default="auto")
     parser.add_argument("--data-dir", type=Path, default=None)

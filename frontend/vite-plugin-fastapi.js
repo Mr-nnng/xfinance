@@ -8,7 +8,7 @@ import { loadEnv } from 'vite'
  * from FastAPI itself.
  */
 export default function fastapiPlugin(options = {}) {
-  let target = options.target || 'http://127.0.0.1:8000'
+  let target = options.target || 'http://127.0.0.1:28473'
 
   return {
     name: 'vite-plugin-fastapi',

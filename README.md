@@ -9,7 +9,7 @@ FastAPI + Vue 3 + lightweight-charts。uv 管理后端依赖，SQLite 本地缓�
 ## 功能
 
 - **行情总览**：8 个主要指数（上证、深成、创业板、上证50、标普500、纳斯达克、道琼斯、恒生）、自选股、7 个美元基准汇率（DXY、EURUSD、USDJPY、GBPUSD、USDCNY、USDCNH、USDHKD）、黄金 / 白银 / WTI / 布伦特 / 上金所金、美债 1 至 30 年期收益率。每 10 秒刷新，卡片点击进入 K 线。自选股最多显示 7 行，滚动条隐藏，鼠标滚轮可用。
-- **股票查看**：A 股、ETF、LOF、指数、S&P 500、纳斯达克、港股和全球宏观序列搜索。实时快照与五档盘口，日 / 周 / 月 K 线，前复权 / 后复权 / 不复权。
+- **股票查看**：A 股、ETF、LOF、指数、道琼斯、S&P 500、纳斯达克、恒生、港股和全球宏观序列搜索。实时快照与五档盘口，日 / 周 / 月 K 线，前复权 / 后复权 / 不复权。
 - **计价切换**：人民币、美元、日元、欧元、英镑、港币、黄金（美元/盎司）、上金所金（人民币/克）、白银、WTI、布伦特。支持起点归一化。切换标的时默认跟随标的原生货币，找不到对应计价物时回到人民币，工具栏提供一键重置。
 - **技术指标**：主图 MA / BOLL，副图成交量、MACD，可选 RSI / KDJ。偏好保存在浏览器本地。
 - **自定义指数**：安全的四则运算表达式，例如 `XAUUSD / WTIUSD`。支持 `@名称` 引用已有指数，显示滚动分位与全历史分位。价格序列按各标的原币计算，不做汇率折算，跨币种含义由使用者判断。
@@ -17,6 +17,10 @@ FastAPI + Vue 3 + lightweight-charts。uv 管理后端依赖，SQLite 本地缓�
 - **数据健壮性**：真实数据优先，按板块失败回退到演示数据，并在界面标注来源。测试全部离线。
 
 ![标的详情](docs/screenshot-instrument.png)
+
+![自定义指数](docs/screenshot-custom-index.png)
+
+![工具箱](docs/screenshot-tools.png)
 
 ## 快速开始
 
@@ -29,7 +33,7 @@ uv sync
 uv run python scripts/devserver.py
 ```
 
-打开 `http://127.0.0.1:5173`。`/api` 由 Vite 代理到 `http://127.0.0.1:8000`，浏览器只看到一个源。
+打开 `http://127.0.0.1:5173`。`/api` 由 Vite 代理到 `http://127.0.0.1:28473`，浏览器只看到一个源。
 
 ## 一键启动
 
@@ -46,12 +50,12 @@ uv run python scripts/devserver.py
 1. 检查 `uv`，没有则调用官方安装脚本安装。
 2. 执行 `uv sync` 安装 Python 依赖。
 3. 如果 `app/frontend-build` 不存在，调用 `npm install` 和 `npm run build` 构建前端。首次构建需要 Node.js 20.19+ 或 22.12+。
-4. 以单端口启动 `xfinance-app`，默认打开 `http://127.0.0.1:8000`。
+4. 以单端口启动 `xfinance-app`，默认打开 `http://127.0.0.1:28473`。
 
 常用环境变量：
 
 ```bash
-XFINANCE_PORT=8080 XFINANCE_DATA_MODE=demo ./start-linux.sh
+XFINANCE_PORT=28474 XFINANCE_DATA_MODE=demo ./start-linux.sh
 XFINANCE_DATA_DIR=/path/to/data ./start-linux.sh
 ```
 
@@ -70,7 +74,7 @@ uv run python scripts/devserver.py --data-mode demo
 ### 只跑后端
 
 ```bash
-uv run python -m app --port 8000
+uv run python -m app --port 28473
 # 或
 uv run xfinance-app
 ```
@@ -155,6 +159,9 @@ normalized = quoted / quoted[window_start]
 │       ├── buildhook.py        Hatch 构建钩子
 │       ├── buildutil.py        前端构建
 │       └── devutil.py          子进程与健康检查
+├── start-windows.bat           Windows 一键启动
+├── start-mac.command           macOS 一键启动
+├── start-linux.sh              Linux 一键启动
 ├── tests/                      离线测试
 ├── alembic.ini
 ├── pyproject.toml
@@ -173,7 +180,7 @@ pydantic-settings 读取环境变量和 `.env`，前缀 `XFINANCE_`。
 | `XFINANCE_DATABASE_URL` | `sqlite+pysqlite:///{data_dir}/xfinance.db` | 覆盖数据库地址 |
 | `XFINANCE_DATA_MODE` | `auto` | `auto` / `live` / `demo` |
 | `XFINANCE_HOST` | `127.0.0.1` | 监听地址 |
-| `XFINANCE_PORT` | `8000` | 监听端口 |
+| `XFINANCE_PORT` | `28473` | 监听端口 |
 | `XFINANCE_UPSTREAM_TIMEOUT` | `8` | 外部请求超时秒数 |
 | `XFINANCE_SNAPSHOT_TTL` | `5` | 股票快照缓存秒数 |
 | `XFINANCE_DEMO_AS_OF` | 今天 | 演示数据截止日，测试用 |
@@ -183,7 +190,7 @@ pydantic-settings 读取环境变量和 `.env`，前缀 `XFINANCE_`。
 命令行参数覆盖对应配置：
 
 ```bash
-uv run python -m app --host 0.0.0.0 --port 9000 \
+uv run python -m app --host 0.0.0.0 --port 28474 \
   --data-mode demo --data-dir ./data --no-browser
 ```
 
@@ -214,12 +221,12 @@ uv run python -m app --host 0.0.0.0 --port 9000 \
 示例：
 
 ```bash
-curl 'http://127.0.0.1:8000/api/instruments/SH600519/chart?numeraire=XAU&range=1y&normalize=true'
+curl 'http://127.0.0.1:28473/api/instruments/SH600519/chart?numeraire=XAU&range=1y&normalize=true'
 ```
 
 ## 性能
 
-总览始终每 10 秒轮询。后端按标的开市状态刷新，已经收盘的 A 股跳过快照请求和同步，仍在交易的 FX、商品继续更新。卡片 sparkline 只读取最近 45 根日线，同步状态新鲜时不再加载全量历史。自定义指数卡片缓存 10 秒，与轮询对齐。主页响应只保留卡片实际使用的字段，实测从约 14.9KB 降到约 10.5KB。本机实测单次总览 CPU 从约 1.2 秒降到约 17 毫秒（demo）、约 44 毫秒（live 开市）和约 27 毫秒（live 收盘后）。
+总览始终每 10 秒轮询。后端按标的开市状态刷新，已经收盘的标的跳过快照请求和同步，仍在交易的 FX、商品和美国、香港标的继续更新。卡片 sparkline 只读取最近 45 根日线，同步状态新鲜时不再加载全量历史。自定义指数卡片缓存 10 秒，与轮询对齐。主页响应只保留卡片实际使用的字段，不返回完整历史。
 
 ## 测试
 
@@ -231,7 +238,7 @@ uv run pytest
 
 ## 开发工具
 
-- `frontend/vite-plugin-fastapi.js`：把 `/api` 代理到 `FASTAPI_URL`，默认 `http://127.0.0.1:8000`。
+- `frontend/vite-plugin-fastapi.js`：把 `/api` 代理到 `FASTAPI_URL`，默认 `http://127.0.0.1:28473`。
 - `scripts/devserver.py`：安装前端依赖、启动两个进程、等待健康检查、退出时清理子进程。`--build-only` 只构建前端。
 - `scripts/fastapi-vue/buildhook.py`：Hatch 自定义构建钩子，在 wheel 构建前运行 Vite 并把 `app/frontend-build/**` 加入产物。
 - `alembic.ini`：`uv run alembic upgrade head` 可用。运行时也会自动执行同一套迁移。
@@ -240,8 +247,9 @@ uv run pytest
 
 - 行情覆盖 A 股、ETF、LOF、A 股指数、道琼斯、S&P 500、纳斯达克、恒生、美元指数、离岸人民币和港股中国海洋石油；不包含美股个股。CNBC 历史接口约 1 年，3 年和 5 年区间会显示较短历史。
 - eltdx 使用非商业研究许可，使用前请阅读其许可与免责声明。
-- 市场状态只按工作日和 A 股交易时段判断，不识别中国法定节假日。
+- 市场状态按 A 股、美国、香港本地交易时段判断，不识别三地法定节假日。
 - 自定义指数只支持数字、序列引用、`@名称`、四则运算、乘方和 `abs/min/max`，不做任意代码执行。
+- 本项目仅供个人学习与研究，不构成任何投资建议。行情可能延迟、缺失或错误，请以交易所和官方数据为准。
 - SQLite 适合个人单机查看，不面向多用户并发写入。
 - 演示数据是确定性的合成序列，只用于离线体验和测试，不代表任何真实行情。
 

@@ -16,7 +16,7 @@ def main(argv: list[str] | None = None) -> None:
         prog="xfinance-app", description="xfinance 个人股票查看器"
     )
     parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--port", type=int, default=28473)
     parser.add_argument("--data-dir", type=Path, default=None)
     parser.add_argument(
         "--data-mode",

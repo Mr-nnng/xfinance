@@ -44,7 +44,7 @@ if [ ! -f "app/frontend-build/index.html" ]; then
 fi
 
 HOST="${XFINANCE_HOST:-127.0.0.1}"
-PORT="${XFINANCE_PORT:-8000}"
+PORT="${XFINANCE_PORT:-28473}"
 DATA_MODE="${XFINANCE_DATA_MODE:-auto}"
 ARGS=(--host "$HOST" --port "$PORT" --data-mode "$DATA_MODE")
 if [ -n "${XFINANCE_DATA_DIR:-}" ]; then

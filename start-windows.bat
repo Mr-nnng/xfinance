@@ -29,7 +29,7 @@ if not exist "app\frontend-build\index.html" (
 )
 
 if defined XFINANCE_HOST (set "HOST=%XFINANCE_HOST%") else (set "HOST=127.0.0.1")
-if defined XFINANCE_PORT (set "PORT=%XFINANCE_PORT%") else (set "PORT=8000")
+if defined XFINANCE_PORT (set "PORT=%XFINANCE_PORT%") else (set "PORT=28473")
 if defined XFINANCE_DATA_MODE (set "DATA_MODE=%XFINANCE_DATA_MODE%") else (set "DATA_MODE=auto")
 set "DATA_ARGS="
 if defined XFINANCE_DATA_DIR set DATA_ARGS=--data-dir "%XFINANCE_DATA_DIR%"

@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     data_mode: Literal["auto", "live", "demo"] = "auto"
 
     host: str = "127.0.0.1"
-    port: int = 8000
+    port: int = 28473
     log_level: str = "INFO"
     frontend_build: Path | None = None
     cors_origins: list[str] = [
