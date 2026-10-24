@@ -31,6 +31,36 @@ uv run python scripts/devserver.py
 
 打开 `http://127.0.0.1:5173`。`/api` 由 Vite 代理到 `http://127.0.0.1:8000`，浏览器只看到一个源。
 
+## 一键启动
+
+仓库根目录提供三个双击/直接运行即可的脚本：
+
+| 系统 | 脚本 | 使用方式 |
+| --- | --- | --- |
+| Windows | `start-windows.bat` | 双击运行 |
+| macOS | `start-mac.command` | 在 Finder 中双击；首次被拦截时右键选择“打开” |
+| Linux | `start-linux.sh` | `chmod +x start-linux.sh && ./start-linux.sh` |
+
+脚本会依次：
+
+1. 检查 `uv`，没有则调用官方安装脚本安装。
+2. 执行 `uv sync` 安装 Python 依赖。
+3. 如果 `app/frontend-build` 不存在，调用 `npm install` 和 `npm run build` 构建前端。首次构建需要 Node.js 20.19+ 或 22.12+。
+4. 以单端口启动 `xfinance-app`，默认打开 `http://127.0.0.1:8000`。
+
+常用环境变量：
+
+```bash
+XFINANCE_PORT=8080 XFINANCE_DATA_MODE=demo ./start-linux.sh
+XFINANCE_DATA_DIR=/path/to/data ./start-linux.sh
+```
+
+macOS / Linux 也可以把额外参数直接传给应用，例如 `./start-linux.sh --no-browser`。
+
+脚本把 uv、Python 和 npm 缓存放在项目内的 `.uvcache`、`.uvpython`、`.npmcache`，不污染用户目录。需要前端热更新时仍使用 `uv run python scripts/devserver.py`；一键脚本启动的是生产单端口版本。
+
+按 `Ctrl+C` 停止。
+
 想先不连外网：
 
 ```bash
