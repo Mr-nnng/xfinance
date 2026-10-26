@@ -151,7 +151,7 @@ SQLite WAL + busy_timeout。迁移由 Alembic 管理，启动时 upgrade head。
 | 前端 | 总览、标的、自定义指数、工具箱四个页面可在 Chrome 中操作；桌面与 390px 移动端截图核验，无横向溢出 |
 | 打包 | `uv build` 产出的 wheel 含 `frontend-build` 与迁移；装进全新虚拟环境后 `xfinance-app` 可启动并托管 SPA |
 
-测试总数 89，全部离线。
+测试总数 90，全部离线。
 
 ### 实际取舍
 

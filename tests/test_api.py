@@ -383,3 +383,25 @@ def test_default_watchlist_and_new_markets(client: TestClient) -> None:
 
     search = client.get("/api/search", params={"q": "嘉实原油"}).json()["data"]
     assert any(item["symbol"] == "SZ160723" for item in search)
+
+
+def test_chart_type_matches_available_ohlc(client: TestClient) -> None:
+    candlesticks = [
+        "SH000001",
+        "SPX",
+        "DJI",
+        "HSI",
+        "DXY",
+        "USDCNH",
+        "XAUUSD",
+        "AU9999",
+        "SZ160723",
+    ]
+    for symbol in candlesticks:
+        meta = client.get(f"/api/instruments/{symbol}").json()["data"]
+        assert meta["chart"] == "candlestick", symbol
+
+    lines = ["USDCNY", "EURUSD", "UST10Y"]
+    for symbol in lines:
+        meta = client.get(f"/api/instruments/{symbol}").json()["data"]
+        assert meta["chart"] == "line", symbol

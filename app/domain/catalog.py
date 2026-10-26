@@ -200,7 +200,7 @@ def series_meta(symbol: str) -> SeriesMeta | None:
             market="FX",
             currency=quote_currency,
             unit=quote_currency,
-            chart="line",
+            chart="candlestick",
         )
     if symbol in US_INDEX_SERIES:
         return SeriesMeta(
@@ -210,7 +210,7 @@ def series_meta(symbol: str) -> SeriesMeta | None:
             market="US",
             currency="USD",
             unit="点",
-            chart="line",
+            chart="candlestick",
         )
     if symbol in GLOBAL_INDEX_SERIES:
         return SeriesMeta(
@@ -220,7 +220,7 @@ def series_meta(symbol: str) -> SeriesMeta | None:
             market="GLOBAL",
             currency="USD",
             unit="点",
-            chart="line",
+            chart="candlestick",
         )
     if symbol in HK_SERIES:
         name, kind = HK_SERIES[symbol]
@@ -231,7 +231,7 @@ def series_meta(symbol: str) -> SeriesMeta | None:
             market="HK",
             currency="HKD",
             unit="点" if kind == "index" else "股",
-            chart="line" if kind == "index" else "candlestick",
+            chart="candlestick",
         )
     if symbol in INVERSE_FX_SERIES:
         name, _base, currency = INVERSE_FX_SERIES[symbol]
@@ -264,7 +264,7 @@ def series_meta(symbol: str) -> SeriesMeta | None:
             market="GLOBAL",
             currency=currency,
             unit=unit,
-            chart="line",
+            chart="candlestick",
         )
     for column, code, label in YIELD_TENORS:
         if code == symbol:
